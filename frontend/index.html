@@ -10,8 +10,9 @@
         body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
         
         nav { background: rgba(255,255,255,0.95); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 20px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 24px; font-weight: 700; color: #764ba2; cursor: pointer; }
+        .logo { font-size: 24px; font-weight: 700; color: #764ba2; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .logo span { color: #667eea; }
+        .logo img { height: 36px; width: auto; }
         .nav-links { display: flex; gap: 25px; align-items: center; }
         .nav-links a { text-decoration: none; color: #333; font-weight: 500; cursor: pointer; }
         .nav-links a:hover { color: #764ba2; }
@@ -53,7 +54,6 @@
         .filter-group { flex: 1; min-width: 150px; }
         .filter-group label { display: block; margin-bottom: 5px; color: #666; font-size: 14px; }
         .filter-group select, .filter-group input { width: 100%; padding: 10px 15px; border: 2px solid #eee; border-radius: 10px; font-family: 'Poppins', sans-serif; }
-        .filter-group select:focus, .filter-group input:focus { outline: none; border-color: #667eea; }
         
         .form-container { background: white; border-radius: 20px; padding: 40px; max-width: 500px; margin: 50px auto; }
         .form-container h2 { text-align: center; margin-bottom: 30px; color: #333; }
@@ -74,7 +74,11 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
         
-        .dashboard-header { background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+        .dashboard-header { background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .dashboard-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #667eea; }
+        .dashboard-info h2 { margin-bottom: 5px; }
+        .dashboard-info p { color: #666; margin-bottom: 10px; }
+        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; border-radius: 15px; padding: 25px; text-align: center; }
         .stat-card h3 { font-size: 36px; color: #667eea; }
@@ -102,6 +106,8 @@
         .review-card { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-top: 15px; }
         .review-card .stars { color: #f39c12; }
         
+        .profile-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #667eea; display: block; margin: 10px auto; }
+        
         footer { background: rgba(0,0,0,0.2); color: white; text-align: center; padding: 30px; margin-top: 50px; }
         
         @media (max-width: 768px) {
@@ -114,7 +120,10 @@
 </head>
 <body>
     <nav>
-        <div class="logo" onclick="showPage('home')">🐱 Purrfect<span>Sitters</span></div>
+        <div class="logo" onclick="showPage('home')">
+            <img src="https://media.tenor.com/images/ce8398445ca5e8cc7e380e04e2cc9b4f/tenor.gif" alt="Cat">
+            Purrfect<span>Sitters</span>
+        </div>
         <div class="nav-links">
             <a onclick="showPage('home')">Home</a>
             <a onclick="showPage('sitters')">Find Sitters</a>
@@ -134,7 +143,7 @@
 
     <div id="home" class="page active">
         <div class="hero">
-            <h1>🐱 Find the Purrfect Cat Sitter in NYC</h1>
+            <h1>Find the Purrfect Cat Sitter in NYC</h1>
             <p>Trusted, verified cat sitters across all five boroughs</p>
             <div class="hero-buttons">
                 <button class="btn btn-primary" onclick="showPage('sitters')">Find a Sitter</button>
@@ -152,38 +161,11 @@
         <div class="filters">
             <h3>🔍 Filter Sitters</h3>
             <div class="filter-row">
-                <div class="filter-group">
-                    <label>Borough</label>
-                    <select id="filter-borough" onchange="filterSitters()">
-                        <option value="all">All Boroughs</option>
-                        <option value="Manhattan">Manhattan</option>
-                        <option value="Brooklyn">Brooklyn</option>
-                        <option value="Queens">Queens</option>
-                        <option value="Bronx">Bronx</option>
-                        <option value="Staten Island">Staten Island</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Max Price</label>
-                    <input type="number" id="filter-max-price" placeholder="$100" onchange="filterSitters()">
-                </div>
-                <div class="filter-group">
-                    <label>Specialty</label>
-                    <select id="filter-specialty" onchange="filterSitters()">
-                        <option value="all">All Specialties</option>
-                        <option value="Senior cats">Senior Cats</option>
-                        <option value="Kittens">Kittens</option>
-                        <option value="Medical care">Medical Care</option>
-                        <option value="Anxious cats">Anxious Cats</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Search</label>
-                    <input type="text" id="filter-search" placeholder="Name or area..." onkeyup="filterSitters()">
-                </div>
-                <div class="filter-group">
-                    <button class="btn btn-secondary btn-small" onclick="clearFilters()">Clear</button>
-                </div>
+                <div class="filter-group"><label>Borough</label><select id="filter-borough" onchange="filterSitters()"><option value="all">All Boroughs</option><option value="Manhattan">Manhattan</option><option value="Brooklyn">Brooklyn</option><option value="Queens">Queens</option><option value="Bronx">Bronx</option><option value="Staten Island">Staten Island</option></select></div>
+                <div class="filter-group"><label>Max Price</label><input type="number" id="filter-max-price" placeholder="$100" onchange="filterSitters()"></div>
+                <div class="filter-group"><label>Specialty</label><select id="filter-specialty" onchange="filterSitters()"><option value="all">All Specialties</option><option value="Senior cats">Senior Cats</option><option value="Kittens">Kittens</option><option value="Medical care">Medical Care</option><option value="Anxious cats">Anxious Cats</option></select></div>
+                <div class="filter-group"><label>Search</label><input type="text" id="filter-search" placeholder="Name or area..." onkeyup="filterSitters()"></div>
+                <div class="filter-group"><button class="btn btn-secondary btn-small" onclick="clearFilters()">Clear</button></div>
             </div>
         </div>
         <div class="card-grid" id="sitters-list"></div>
@@ -194,10 +176,7 @@
             <div class="detail-img" id="sitter-detail-img"></div>
             <div class="detail-info" id="sitter-detail-info"></div>
         </div>
-        <div style="margin-top:30px;">
-            <h3 style="color:white;margin-bottom:20px;">Reviews</h3>
-            <div id="sitter-reviews"></div>
-        </div>
+        <div style="margin-top:30px;"><h3 style="color:white;margin-bottom:20px;">Reviews</h3><div id="sitter-reviews"></div></div>
     </div>
 
     <div id="breeds" class="page">
@@ -214,7 +193,7 @@
 
     <div id="login" class="page">
         <div class="form-container">
-            <h2>🐱 Welcome Back!</h2>
+            <h2>Welcome Back!</h2>
             <div id="login-alert"></div>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group"><label>Email</label><input type="email" id="login-email" required></div>
@@ -227,16 +206,10 @@
 
     <div id="register" class="page">
         <div class="form-container">
-            <h2>🐱 Join Purrfect Sitters</h2>
+            <h2>Join Purrfect Sitters</h2>
             <div id="register-alert"></div>
             <form onsubmit="handleRegister(event)">
-                <div class="form-group"><label>I am a...</label>
-                    <select id="register-type" required>
-                        <option value="">Select type</option>
-                        <option value="owner">Cat Owner</option>
-                        <option value="sitter">Cat Sitter</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>I am a...</label><select id="register-type" required><option value="">Select type</option><option value="owner">Cat Owner</option><option value="sitter">Cat Sitter</option></select></div>
                 <div class="form-group"><label>First Name</label><input type="text" id="register-firstname" required></div>
                 <div class="form-group"><label>Last Name</label><input type="text" id="register-lastname" required></div>
                 <div class="form-group"><label>Email</label><input type="email" id="register-email" required></div>
@@ -251,17 +224,21 @@
 
     <div id="dashboard" class="page">
         <div class="dashboard-header">
-            <h2 id="dashboard-welcome">Welcome!</h2>
-            <p id="dashboard-type"></p>
+            <img id="dashboard-avatar" class="dashboard-avatar" src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200" alt="Profile">
+            <div class="dashboard-info">
+                <h2 id="dashboard-welcome">Welcome!</h2>
+                <p id="dashboard-type"></p>
+                <button class="btn btn-secondary btn-small" onclick="openProfileModal()">Edit Profile</button>
+            </div>
         </div>
         <div class="stats-grid" id="dashboard-stats"></div>
-        <div style="background:white;border-radius:20px;padding:30px;">
+        <div style="background:white;border-radius:20px;padding:30px;margin-bottom:30px;">
             <h3 style="margin-bottom:20px;">Your Bookings</h3>
-            <div id="dashboard-bookings"></div>
+            <div id="dashboard-bookings"><p style="color:#666;">No bookings yet.</p></div>
         </div>
-        <div id="sitter-profile-section" style="display:none;margin-top:30px;">
+        <div id="sitter-profile-section" style="display:none;">
             <div style="background:white;border-radius:20px;padding:30px;">
-                <h3>Your Sitter Profile</h3>
+                <h3 style="margin-bottom:20px;">Your Sitter Profile</h3>
                 <form onsubmit="updateSitterProfile(event)" id="sitter-profile-form"></form>
             </div>
         </div>
@@ -269,35 +246,25 @@
 
     <div id="contact" class="page">
         <div class="form-container" style="max-width:600px;">
-            <h2>📞 Contact Us</h2>
+            <h2>Contact Us</h2>
             <div id="contact-alert"></div>
             <form onsubmit="handleContact(event)">
                 <div class="form-group"><label>Name</label><input type="text" id="contact-name" required></div>
                 <div class="form-group"><label>Email</label><input type="email" id="contact-email" required></div>
-                <div class="form-group"><label>Subject</label>
-                    <select id="contact-subject" required>
-                        <option value="">Select</option>
-                        <option>General Inquiry</option>
-                        <option>Booking Question</option>
-                        <option>Technical Support</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Subject</label><select id="contact-subject" required><option value="">Select</option><option>General Inquiry</option><option>Booking Question</option><option>Technical Support</option></select></div>
                 <div class="form-group"><label>Message</label><textarea id="contact-message" required></textarea></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Send Message</button>
             </form>
         </div>
     </div>
 
+    <!-- Modals -->
     <div class="modal" id="booking-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Book a Sitter</h3>
-                <button class="modal-close" onclick="closeModal('booking-modal')">&times;</button>
-            </div>
+            <div class="modal-header"><h3>Book a Sitter</h3><button class="modal-close" onclick="closeModal('booking-modal')">&times;</button></div>
             <div id="booking-alert"></div>
             <form onsubmit="handleBooking(event)">
-                <input type="hidden" id="booking-sitter-id">
-                <input type="hidden" id="booking-sitter-rate">
+                <input type="hidden" id="booking-sitter-id"><input type="hidden" id="booking-sitter-rate">
                 <div class="form-group"><label>Sitter</label><input type="text" id="booking-sitter-name" readonly></div>
                 <div class="form-group"><label>Cat's Name</label><input type="text" id="booking-cat-name" required></div>
                 <div class="form-group"><label>Breed</label><select id="booking-cat-breed" required></select></div>
@@ -312,30 +279,32 @@
 
     <div class="modal" id="review-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Leave a Review</h3>
-                <button class="modal-close" onclick="closeModal('review-modal')">&times;</button>
-            </div>
+            <div class="modal-header"><h3>Leave a Review</h3><button class="modal-close" onclick="closeModal('review-modal')">&times;</button></div>
             <form onsubmit="handleReview(event)">
                 <input type="hidden" id="review-sitter-id">
-                <div class="form-group"><label>Rating</label>
-                    <select id="review-rating" required>
-                        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
-                        <option value="4">⭐⭐⭐⭐ Great</option>
-                        <option value="3">⭐⭐⭐ Good</option>
-                        <option value="2">⭐⭐ Fair</option>
-                        <option value="1">⭐ Poor</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Rating</label><select id="review-rating" required><option value="5">⭐⭐⭐⭐⭐ Excellent</option><option value="4">⭐⭐⭐⭐ Great</option><option value="3">⭐⭐⭐ Good</option><option value="2">⭐⭐ Fair</option><option value="1">⭐ Poor</option></select></div>
                 <div class="form-group"><label>Your Review</label><textarea id="review-comment" required></textarea></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Submit Review</button>
             </form>
         </div>
     </div>
 
-    <footer>
-        <p>🐱 Purrfect Sitters © 2025 | NYC's Premier Cat Sitting Service</p>
-    </footer>
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Edit Profile</h3><button class="modal-close" onclick="closeModal('profile-modal')">&times;</button></div>
+            <div id="profile-alert"></div>
+            <form onsubmit="handleProfileUpdate(event)">
+                <img id="profile-preview" class="profile-preview" src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200" alt="Preview">
+                <div class="form-group"><label>Profile Picture URL</label><input type="url" id="profile-image" placeholder="https://example.com/photo.jpg" onchange="previewImage()"><small style="color:#666;">Paste a link to your photo</small></div>
+                <div class="form-group"><label>First Name</label><input type="text" id="profile-firstname" required></div>
+                <div class="form-group"><label>Last Name</label><input type="text" id="profile-lastname" required></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="profile-phone"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <footer><p>Purrfect Sitters © 2025 | NYC's Premier Cat Sitting Service</p></footer>
 
     <script>
         const API = window.location.origin + '/api';
@@ -373,14 +342,8 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const res = await fetch(API + '/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    email: document.getElementById('login-email').value,
-                    password: document.getElementById('login-password').value
-                })
+            const res = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value })
             });
             const data = await res.json();
             if (data.success) {
@@ -401,18 +364,8 @@
                 document.getElementById('register-alert').innerHTML = '<div class="alert alert-error">Passwords do not match!</div>';
                 return;
             }
-            const res = await fetch(API + '/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    userType: document.getElementById('register-type').value,
-                    firstName: document.getElementById('register-firstname').value,
-                    lastName: document.getElementById('register-lastname').value,
-                    email: document.getElementById('register-email').value,
-                    phone: document.getElementById('register-phone').value,
-                    password: document.getElementById('register-password').value
-                })
+            const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ userType: document.getElementById('register-type').value, firstName: document.getElementById('register-firstname').value, lastName: document.getElementById('register-lastname').value, email: document.getElementById('register-email').value, phone: document.getElementById('register-phone').value, password: document.getElementById('register-password').value })
             });
             const data = await res.json();
             if (data.success) {
@@ -435,14 +388,83 @@
             showPage('home');
         }
 
+        function openProfileModal() {
+            if (!currentUser) return;
+            document.getElementById('profile-firstname').value = currentUser.firstName || '';
+            document.getElementById('profile-lastname').value = currentUser.lastName || '';
+            document.getElementById('profile-phone').value = currentUser.phone || '';
+            document.getElementById('profile-image').value = currentUser.profileImage || '';
+            document.getElementById('profile-preview').src = currentUser.profileImage || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200';
+            document.getElementById('profile-modal').classList.add('active');
+        }
+
+        function previewImage() {
+            const url = document.getElementById('profile-image').value;
+            document.getElementById('profile-preview').src = url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200';
+        }
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/auth/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ firstName: document.getElementById('profile-firstname').value, lastName: document.getElementById('profile-lastname').value, phone: document.getElementById('profile-phone').value, profileImage: document.getElementById('profile-image').value })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                document.getElementById('profile-alert').innerHTML = '<div class="alert alert-success">Profile updated!</div>';
+                document.getElementById('user-name').textContent = 'Hi, ' + currentUser.firstName + '!';
+                setTimeout(() => { closeModal('profile-modal'); loadDashboard(); }, 1000);
+            } else {
+                document.getElementById('profile-alert').innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+            }
+        }
+
+        async function loadDashboard() {
+            if (!currentUser) { showPage('login'); return; }
+            document.getElementById('dashboard-welcome').textContent = 'Welcome, ' + currentUser.firstName + ' ' + currentUser.lastName + '!';
+            document.getElementById('dashboard-type').textContent = currentUser.userType === 'owner' ? 'Cat Owner Account' : 'Cat Sitter Account';
+            const avatar = currentUser.profileImage || (currentUser.sitterProfile?.imageUrl) || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200';
+            document.getElementById('dashboard-avatar').src = avatar;
+
+            const res = await fetch(API + '/bookings/my', { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) {
+                const bookings = data.data;
+                document.getElementById('dashboard-stats').innerHTML = '<div class="stat-card"><h3>' + bookings.length + '</h3><p>Total Bookings</p></div><div class="stat-card"><h3>' + bookings.filter(b => b.status === 'pending').length + '</h3><p>Pending</p></div><div class="stat-card"><h3>' + bookings.filter(b => b.status === 'confirmed').length + '</h3><p>Confirmed</p></div>';
+                document.getElementById('dashboard-bookings').innerHTML = bookings.length ? bookings.map(b => '<div class="booking-card"><div class="booking-info"><h4>' + (currentUser.userType === 'owner' ? b.sitterName : b.ownerName) + '</h4><p>🐱 ' + b.catName + '</p><p>📅 ' + new Date(b.startDate).toLocaleDateString() + ' - ' + new Date(b.endDate).toLocaleDateString() + '</p><p>💰 $' + b.totalCost + '</p></div><span class="booking-status status-' + b.status + '">' + b.status.toUpperCase() + '</span></div>').join('') : '<p style="color:#666">No bookings yet.</p>';
+            }
+
+            if (currentUser.userType === 'sitter' && currentUser.sitterProfile) {
+                document.getElementById('sitter-profile-section').style.display = 'block';
+                const p = currentUser.sitterProfile;
+                document.getElementById('sitter-profile-form').innerHTML = `
+                    <div class="form-group"><label>Borough</label><select id="sp-borough"><option value="Manhattan" ${p.borough==='Manhattan'?'selected':''}>Manhattan</option><option value="Brooklyn" ${p.borough==='Brooklyn'?'selected':''}>Brooklyn</option><option value="Queens" ${p.borough==='Queens'?'selected':''}>Queens</option><option value="Bronx" ${p.borough==='Bronx'?'selected':''}>Bronx</option><option value="Staten Island" ${p.borough==='Staten Island'?'selected':''}>Staten Island</option></select></div>
+                    <div class="form-group"><label>Neighborhood</label><input type="text" id="sp-neighborhood" value="${p.neighborhood || ''}"></div>
+                    <div class="form-group"><label>Daily Rate ($)</label><input type="number" id="sp-rate" value="${p.rate || 40}"></div>
+                    <div class="form-group"><label>Experience</label><input type="text" id="sp-experience" value="${p.experience || ''}"></div>
+                    <div class="form-group"><label>Specialties (comma-separated)</label><input type="text" id="sp-specialties" value="${(p.specialties || []).join(', ')}"></div>
+                    <div class="form-group"><label>Bio</label><textarea id="sp-bio">${p.bio || ''}</textarea></div>
+                    <button type="submit" class="btn btn-primary">Update Sitter Profile</button>`;
+            } else {
+                document.getElementById('sitter-profile-section').style.display = 'none';
+            }
+        }
+
+        async function updateSitterProfile(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/sitters/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ borough: document.getElementById('sp-borough').value, neighborhood: document.getElementById('sp-neighborhood').value, rate: parseInt(document.getElementById('sp-rate').value), experience: document.getElementById('sp-experience').value, specialties: document.getElementById('sp-specialties').value, bio: document.getElementById('sp-bio').value })
+            });
+            const data = await res.json();
+            if (data.success) { alert('Sitter profile updated!'); await checkAuth(); loadDashboard(); }
+        }
+
         async function loadHomeBreeds() {
             const res = await fetch(API + '/breeds');
             const data = await res.json();
             if (data.success) {
                 allBreeds = data.data;
-                document.getElementById('home-breeds').innerHTML = data.data.slice(0, 4).map(b => 
-                    '<div class="breed-card" onclick="showBreedDetail(\'' + b.id + '\')"><img src="' + b.imageUrl + '" onerror="this.src=\'https://placekitten.com/400/300\'"><div class="breed-card-body"><h3>' + b.emoji + ' ' + b.name + '</h3><p>' + b.tagline + '</p></div></div>'
-                ).join('');
+                document.getElementById('home-breeds').innerHTML = data.data.slice(0, 4).map(b => '<div class="breed-card" onclick="showBreedDetail(\'' + b.id + '\')"><img src="' + b.imageUrl + '" onerror="this.src=\'https://placekitten.com/400/300\'"><div class="breed-card-body"><h3>' + b.emoji + ' ' + b.name + '</h3><p>' + b.tagline + '</p></div></div>').join('');
             }
         }
 
@@ -451,9 +473,7 @@
             const data = await res.json();
             if (data.success) {
                 allBreeds = data.data;
-                document.getElementById('breeds-list').innerHTML = data.data.map(b => 
-                    '<div class="breed-card" onclick="showBreedDetail(\'' + b.id + '\')"><img src="' + b.imageUrl + '" onerror="this.src=\'https://placekitten.com/400/300\'"><div class="breed-card-body"><h3>' + b.emoji + ' ' + b.name + '</h3><p>' + b.tagline + '</p></div></div>'
-                ).join('');
+                document.getElementById('breeds-list').innerHTML = data.data.map(b => '<div class="breed-card" onclick="showBreedDetail(\'' + b.id + '\')"><img src="' + b.imageUrl + '" onerror="this.src=\'https://placekitten.com/400/300\'"><div class="breed-card-body"><h3>' + b.emoji + ' ' + b.name + '</h3><p>' + b.tagline + '</p></div></div>').join('');
                 document.getElementById('booking-cat-breed').innerHTML = '<option value="">Select</option>' + data.data.map(b => '<option value="' + b.name + '">' + b.name + '</option>').join('');
             }
         }
@@ -469,9 +489,7 @@
         async function loadHomeSitters() {
             const res = await fetch(API + '/sitters');
             const data = await res.json();
-            if (data.success) {
-                document.getElementById('home-sitters').innerHTML = data.data.slice(0, 4).map(s => sitterCard(s)).join('');
-            }
+            if (data.success) document.getElementById('home-sitters').innerHTML = data.data.slice(0, 4).map(s => sitterCard(s)).join('');
         }
 
         async function loadAllSitters() {
@@ -505,12 +523,11 @@
 
         function renderSitters(sitters) {
             const c = document.getElementById('sitters-list');
-            if (!sitters.length) { c.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">No sitters found.</p>'; return; }
-            c.innerHTML = sitters.map(s => sitterCard(s)).join('');
+            c.innerHTML = sitters.length ? sitters.map(s => sitterCard(s)).join('') : '<p style="color:white;text-align:center;grid-column:1/-1">No sitters found.</p>';
         }
 
         function sitterCard(s) {
-            return '<div class="sitter-card"><img src="' + s.imageUrl + '" onerror="this.src=\'https://via.placeholder.com/200\'"><div class="sitter-card-body"><h3>' + s.name + (s.verified ? ' ✓' : '') + '</h3><p class="sitter-location">📍 ' + s.neighborhood + ', ' + s.borough + '</p><p class="sitter-rating">' + '⭐'.repeat(Math.floor(s.rating)) + ' ' + s.rating + ' (' + s.reviewCount + ')</p><div class="sitter-specialties">' + s.specialties.slice(0,3).map(x => '<span class="specialty-tag">' + x + '</span>').join('') + '</div><p class="sitter-price">' + s.rateDisplay + '</p><div style="display:flex;gap:10px"><button class="btn btn-secondary btn-small" onclick="showSitterDetail(\'' + s._id + '\')">View</button><button class="btn btn-primary btn-small" onclick="openBooking(\'' + s._id + '\',\'' + s.name + '\',' + s.rate + ')">Book</button></div></div></div>';
+            return '<div class="sitter-card"><img src="' + s.imageUrl + '" onerror="this.src=\'https://via.placeholder.com/200\'"><div class="sitter-card-body"><h3>' + s.name + (s.verified ? ' ✓' : '') + '</h3><p class="sitter-location">📍 ' + (s.neighborhood || '') + ', ' + s.borough + '</p><p class="sitter-rating">' + '⭐'.repeat(Math.floor(s.rating)) + ' ' + s.rating + ' (' + s.reviewCount + ')</p><div class="sitter-specialties">' + (s.specialties || []).slice(0,3).map(x => '<span class="specialty-tag">' + x + '</span>').join('') + '</div><p class="sitter-price">' + s.rateDisplay + '</p><div style="display:flex;gap:10px"><button class="btn btn-secondary btn-small" onclick="showSitterDetail(\'' + s._id + '\')">View</button><button class="btn btn-primary btn-small" onclick="openBooking(\'' + s._id + '\',\'' + s.name + '\',' + s.rate + ')">Book</button></div></div></div>';
         }
 
         async function showSitterDetail(id) {
@@ -519,9 +536,8 @@
             if (data.success) {
                 const s = data.data;
                 document.getElementById('sitter-detail-img').innerHTML = '<img src="' + s.imageUrl + '">';
-                document.getElementById('sitter-detail-info').innerHTML = '<h2>' + s.name + (s.verified ? ' <span style="color:#28a745">✓ Verified</span>' : '') + '</h2><p style="color:#667eea">📍 ' + s.neighborhood + ', ' + s.borough + '</p><p style="color:#f39c12;font-size:18px;margin:10px 0">' + '⭐'.repeat(Math.floor(s.rating)) + ' ' + s.rating + ' (' + s.reviewCount + ' reviews)</p><p class="sitter-price" style="font-size:28px;margin:20px 0">' + s.rateDisplay + '</p><h4>About</h4><p style="color:#666">' + s.bio + '</p><h4 style="margin-top:15px">Experience</h4><p style="color:#666">' + s.experience + '</p><h4 style="margin-top:15px">Specialties</h4><div class="sitter-specialties">' + s.specialties.map(x => '<span class="specialty-tag">' + x + '</span>').join('') + '</div><div style="display:flex;gap:15px;margin-top:25px"><button class="btn btn-primary" onclick="openBooking(\'' + s._id + '\',\'' + s.name + '\',' + s.rate + ')">Book Now</button><button class="btn btn-secondary" onclick="openReview(\'' + s._id + '\')">Leave Review</button></div>';
-                const reviews = s.reviews || [];
-                document.getElementById('sitter-reviews').innerHTML = reviews.length ? reviews.map(r => '<div class="review-card"><div class="stars">' + '⭐'.repeat(r.rating) + '</div><p style="font-weight:500">' + r.ownerName + '</p><p style="color:#666">' + r.comment + '</p></div>').join('') : '<div class="review-card"><p style="color:#666">No reviews yet.</p></div>';
+                document.getElementById('sitter-detail-info').innerHTML = '<h2>' + s.name + (s.verified ? ' <span style="color:#28a745">✓ Verified</span>' : '') + '</h2><p style="color:#667eea">📍 ' + (s.neighborhood || '') + ', ' + s.borough + '</p><p style="color:#f39c12;font-size:18px;margin:10px 0">' + '⭐'.repeat(Math.floor(s.rating)) + ' ' + s.rating + ' (' + s.reviewCount + ' reviews)</p><p class="sitter-price" style="font-size:28px;margin:20px 0">' + s.rateDisplay + '</p><h4>About</h4><p style="color:#666">' + (s.bio || 'No bio yet.') + '</p><h4 style="margin-top:15px">Experience</h4><p style="color:#666">' + (s.experience || 'Not specified') + '</p><h4 style="margin-top:15px">Specialties</h4><div class="sitter-specialties">' + (s.specialties || []).map(x => '<span class="specialty-tag">' + x + '</span>').join('') + '</div><div style="display:flex;gap:15px;margin-top:25px"><button class="btn btn-primary" onclick="openBooking(\'' + s._id + '\',\'' + s.name + '\',' + s.rate + ')">Book Now</button><button class="btn btn-secondary" onclick="openReview(\'' + s._id + '\')">Leave Review</button></div>';
+                document.getElementById('sitter-reviews').innerHTML = (s.reviews || []).length ? s.reviews.map(r => '<div class="review-card"><div class="stars">' + '⭐'.repeat(r.rating) + '</div><p style="font-weight:500">' + r.ownerName + '</p><p style="color:#666">' + r.comment + '</p></div>').join('') : '<div class="review-card"><p style="color:#666">No reviews yet.</p></div>';
                 showPage('sitter-detail');
             }
         }
@@ -531,9 +547,6 @@
             document.getElementById('booking-sitter-id').value = id;
             document.getElementById('booking-sitter-name').value = name;
             document.getElementById('booking-sitter-rate').value = rate;
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('booking-start').min = today;
-            document.getElementById('booking-end').min = today;
             document.getElementById('booking-summary').innerHTML = '';
             document.getElementById('booking-modal').classList.add('active');
         }
@@ -550,18 +563,8 @@
 
         async function handleBooking(e) {
             e.preventDefault();
-            const res = await fetch(API + '/bookings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    sitterId: document.getElementById('booking-sitter-id').value,
-                    catName: document.getElementById('booking-cat-name').value,
-                    catBreed: document.getElementById('booking-cat-breed').value,
-                    startDate: document.getElementById('booking-start').value,
-                    endDate: document.getElementById('booking-end').value,
-                    specialInstructions: document.getElementById('booking-instructions').value
-                })
+            const res = await fetch(API + '/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ sitterId: document.getElementById('booking-sitter-id').value, catName: document.getElementById('booking-cat-name').value, catBreed: document.getElementById('booking-cat-breed').value, startDate: document.getElementById('booking-start').value, endDate: document.getElementById('booking-end').value, specialInstructions: document.getElementById('booking-instructions').value })
             });
             const data = await res.json();
             if (data.success) {
@@ -580,91 +583,23 @@
 
         async function handleReview(e) {
             e.preventDefault();
-            const res = await fetch(API + '/reviews', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    sitterId: document.getElementById('review-sitter-id').value,
-                    rating: parseInt(document.getElementById('review-rating').value),
-                    comment: document.getElementById('review-comment').value
-                })
+            const res = await fetch(API + '/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ sitterId: document.getElementById('review-sitter-id').value, rating: parseInt(document.getElementById('review-rating').value), comment: document.getElementById('review-comment').value })
             });
             const data = await res.json();
-            if (data.success) {
-                alert('Review submitted!');
-                closeModal('review-modal');
-                showSitterDetail(document.getElementById('review-sitter-id').value);
-            }
-        }
-
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        async function loadDashboard() {
-            if (!currentUser) { showPage('login'); return; }
-            document.getElementById('dashboard-welcome').textContent = 'Welcome, ' + currentUser.firstName + '!';
-            document.getElementById('dashboard-type').textContent = currentUser.userType === 'owner' ? 'Cat Owner Account' : 'Cat Sitter Account';
-            
-            const res = await fetch(API + '/bookings/my', { credentials: 'include' });
-            const data = await res.json();
-            if (data.success) {
-                const bookings = data.data;
-                const pending = bookings.filter(b => b.status === 'pending').length;
-                const confirmed = bookings.filter(b => b.status === 'confirmed').length;
-                
-                document.getElementById('dashboard-stats').innerHTML = '<div class="stat-card"><h3>' + bookings.length + '</h3><p>Total Bookings</p></div><div class="stat-card"><h3>' + pending + '</h3><p>Pending</p></div><div class="stat-card"><h3>' + confirmed + '</h3><p>Confirmed</p></div>';
-                
-                document.getElementById('dashboard-bookings').innerHTML = bookings.length ? bookings.map(b => '<div class="booking-card"><div class="booking-info"><h4>' + (currentUser.userType === 'owner' ? b.sitterName : b.ownerName) + '</h4><p>🐱 ' + b.catName + '</p><p>📅 ' + new Date(b.startDate).toLocaleDateString() + ' - ' + new Date(b.endDate).toLocaleDateString() + '</p><p>💰 $' + b.totalCost + '</p></div><span class="booking-status status-' + b.status + '">' + b.status.toUpperCase() + '</span></div>').join('') : '<p style="color:#666">No bookings yet.</p>';
-            }
-
-            if (currentUser.userType === 'sitter') {
-                document.getElementById('sitter-profile-section').style.display = 'block';
-                loadSitterProfile();
-            }
-        }
-
-        async function loadSitterProfile() {
-            if (!currentUser.sitterProfile) return;
-            const p = currentUser.sitterProfile;
-            document.getElementById('sitter-profile-form').innerHTML = '<div class="form-group"><label>Borough</label><select id="profile-borough"><option value="Manhattan"' + (p.borough==='Manhattan'?' selected':'') + '>Manhattan</option><option value="Brooklyn"' + (p.borough==='Brooklyn'?' selected':'') + '>Brooklyn</option><option value="Queens"' + (p.borough==='Queens'?' selected':'') + '>Queens</option><option value="Bronx"' + (p.borough==='Bronx'?' selected':'') + '>Bronx</option><option value="Staten Island"' + (p.borough==='Staten Island'?' selected':'') + '>Staten Island</option></select></div><div class="form-group"><label>Neighborhood</label><input type="text" id="profile-neighborhood" value="' + (p.neighborhood||'') + '"></div><div class="form-group"><label>Daily Rate ($)</label><input type="number" id="profile-rate" value="' + p.rate + '"></div><div class="form-group"><label>Experience</label><input type="text" id="profile-experience" value="' + (p.experience||'') + '"></div><div class="form-group"><label>Bio</label><textarea id="profile-bio">' + (p.bio||'') + '</textarea></div><button type="submit" class="btn btn-primary">Update Profile</button>';
-        }
-
-        async function updateSitterProfile(e) {
-            e.preventDefault();
-            const res = await fetch(API + '/sitters/profile', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    borough: document.getElementById('profile-borough').value,
-                    neighborhood: document.getElementById('profile-neighborhood').value,
-                    rate: parseInt(document.getElementById('profile-rate').value),
-                    experience: document.getElementById('profile-experience').value,
-                    bio: document.getElementById('profile-bio').value
-                })
-            });
-            const data = await res.json();
-            if (data.success) { alert('Profile updated!'); checkAuth(); }
+            if (data.success) { alert('Review submitted!'); closeModal('review-modal'); showSitterDetail(document.getElementById('review-sitter-id').value); }
         }
 
         async function handleContact(e) {
             e.preventDefault();
-            const res = await fetch(API + '/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: document.getElementById('contact-name').value,
-                    email: document.getElementById('contact-email').value,
-                    subject: document.getElementById('contact-subject').value,
-                    message: document.getElementById('contact-message').value
-                })
+            const res = await fetch(API + '/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: document.getElementById('contact-name').value, email: document.getElementById('contact-email').value, subject: document.getElementById('contact-subject').value, message: document.getElementById('contact-message').value })
             });
             const data = await res.json();
-            if (data.success) {
-                document.getElementById('contact-alert').innerHTML = '<div class="alert alert-success">Message sent!</div>';
-                e.target.reset();
-            }
+            if (data.success) { document.getElementById('contact-alert').innerHTML = '<div class="alert alert-success">Message sent!</div>'; e.target.reset(); }
         }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         init();
     </script>

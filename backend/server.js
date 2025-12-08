@@ -44,12 +44,12 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: MONGODB_URI,
-        ttl: 24 * 60 * 60 // 1 day
+        ttl: 24 * 60 * 60
     }),
     cookie: {
-        secure: false, // set to true in production with HTTPS
+        secure: false,
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
 
@@ -57,7 +57,6 @@ app.use(session({
 // SCHEMAS
 // ============================================
 
-// User Schema (for authentication)
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
@@ -65,11 +64,11 @@ const userSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     userType: { type: String, enum: ['owner', 'sitter'], required: true },
     phone: String,
+    profileImage: String,
     createdAt: { type: Date, default: Date.now },
     sitterProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Sitter' }
 });
 
-// Breed Schema
 const breedSchema = new mongoose.Schema({
     id: String,
     name: String,
@@ -83,7 +82,6 @@ const breedSchema = new mongoose.Schema({
     imageUrl: String
 });
 
-// Sitter Schema
 const sitterSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: String,
@@ -104,7 +102,6 @@ const sitterSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Booking Schema
 const bookingSchema = new mongoose.Schema({
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     sitterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Sitter' },
@@ -123,7 +120,6 @@ const bookingSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Contact Schema
 const contactSchema = new mongoose.Schema({
     name: String,
     email: String,
@@ -132,7 +128,6 @@ const contactSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Review Schema
 const reviewSchema = new mongoose.Schema({
     sitterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Sitter' },
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -142,7 +137,6 @@ const reviewSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Create Models
 const User = mongoose.model('User', userSchema);
 const Breed = mongoose.model('Breed', breedSchema);
 const Sitter = mongoose.model('Sitter', sitterSchema);
@@ -176,7 +170,6 @@ const requireSitter = async (req, res, next) => {
 // AUTH ROUTES
 // ============================================
 
-// Register
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { email, password, firstName, lastName, userType, phone } = req.body;
@@ -199,7 +192,8 @@ app.post('/api/auth/register', async (req, res) => {
             firstName,
             lastName,
             userType,
-            phone
+            phone,
+            profileImage: ''
         });
 
         await user.save();
@@ -231,6 +225,11 @@ app.post('/api/auth/register', async (req, res) => {
         req.session.userId = user._id;
         req.session.userType = user.userType;
 
+        let sitterProfile = null;
+        if (userType === 'sitter') {
+            sitterProfile = await Sitter.findOne({ userId: user._id });
+        }
+
         res.json({
             success: true,
             message: 'Registration successful!',
@@ -239,7 +238,10 @@ app.post('/api/auth/register', async (req, res) => {
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                userType: user.userType
+                userType: user.userType,
+                phone: user.phone,
+                profileImage: user.profileImage,
+                sitterProfile: sitterProfile
             }
         });
 
@@ -249,7 +251,6 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-// Login
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -285,6 +286,8 @@ app.post('/api/auth/login', async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 userType: user.userType,
+                phone: user.phone,
+                profileImage: user.profileImage,
                 sitterProfile: sitterProfile
             }
         });
@@ -295,7 +298,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Logout
 app.post('/api/auth/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -305,7 +307,48 @@ app.post('/api/auth/logout', (req, res) => {
     });
 });
 
-// Get current user
+// Update user profile
+app.put('/api/auth/profile', requireAuth, async (req, res) => {
+    try {
+        const { firstName, lastName, phone, profileImage } = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.session.userId,
+            { $set: { firstName, lastName, phone, profileImage: profileImage || '' } },
+            { new: true }
+        ).select('-password');
+
+        if (user.userType === 'sitter' && user.sitterProfile) {
+            await Sitter.findByIdAndUpdate(user.sitterProfile, {
+                name: `${firstName} ${lastName}`,
+                phone,
+                imageUrl: profileImage || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200'
+            });
+        }
+
+        let sitterProfile = null;
+        if (user.userType === 'sitter' && user.sitterProfile) {
+            sitterProfile = await Sitter.findById(user.sitterProfile);
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Profile updated!', 
+            user: {
+                id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                userType: user.userType,
+                phone: user.phone,
+                profileImage: user.profileImage,
+                sitterProfile: sitterProfile
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.get('/api/auth/me', async (req, res) => {
     try {
         if (!req.session.userId) {
@@ -331,6 +374,7 @@ app.get('/api/auth/me', async (req, res) => {
                 lastName: user.lastName,
                 userType: user.userType,
                 phone: user.phone,
+                profileImage: user.profileImage,
                 sitterProfile: sitterProfile
             }
         });
@@ -366,7 +410,7 @@ app.get('/api/breeds/:id', async (req, res) => {
 });
 
 // ============================================
-// SITTER ROUTES (with search/filter)
+// SITTER ROUTES
 // ============================================
 
 app.get('/api/sitters', async (req, res) => {
@@ -375,28 +419,17 @@ app.get('/api/sitters', async (req, res) => {
         
         let filter = {};
         
-        if (borough && borough !== 'all') {
-            filter.borough = borough;
-        }
-        
+        if (borough && borough !== 'all') filter.borough = borough;
         if (minRate || maxRate) {
             filter.rate = {};
             if (minRate) filter.rate.$gte = Number(minRate);
             if (maxRate) filter.rate.$lte = Number(maxRate);
         }
-        
         if (specialty && specialty !== 'all') {
             filter.specialties = { $in: [new RegExp(specialty, 'i')] };
         }
-        
-        if (minRating) {
-            filter.rating = { $gte: Number(minRating) };
-        }
-        
-        if (available === 'true') {
-            filter.availability = true;
-        }
-        
+        if (minRating) filter.rating = { $gte: Number(minRating) };
+        if (available === 'true') filter.availability = true;
         if (search) {
             filter.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -420,16 +453,13 @@ app.get('/api/sitters/:id', async (req, res) => {
         if (!sitter) {
             return res.status(404).json({ success: false, message: 'Sitter not found' });
         }
-        
         const reviews = await Review.find({ sitterId: sitter._id }).sort({ createdAt: -1 });
-        
         res.json({ success: true, data: { ...sitter.toObject(), reviews } });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Update sitter profile
 app.put('/api/sitters/profile', requireSitter, async (req, res) => {
     try {
         const user = req.user;
@@ -437,6 +467,9 @@ app.put('/api/sitters/profile', requireSitter, async (req, res) => {
 
         if (updates.rate) {
             updates.rateDisplay = `$${updates.rate}/day`;
+        }
+        if (updates.specialties && typeof updates.specialties === 'string') {
+            updates.specialties = updates.specialties.split(',').map(s => s.trim()).filter(s => s);
         }
 
         const sitter = await Sitter.findByIdAndUpdate(
@@ -505,7 +538,11 @@ app.get('/api/bookings/my', requireAuth, async (req, res) => {
             bookings = await Booking.find({ ownerId: user._id }).sort({ createdAt: -1 });
         } else {
             const sitter = await Sitter.findOne({ userId: user._id });
-            bookings = await Booking.find({ sitterId: sitter._id }).sort({ createdAt: -1 });
+            if (sitter) {
+                bookings = await Booking.find({ sitterId: sitter._id }).sort({ createdAt: -1 });
+            } else {
+                bookings = [];
+            }
         }
 
         res.json({ success: true, data: bookings });
@@ -523,15 +560,6 @@ app.put('/api/bookings/:id/status', requireSitter, async (req, res) => {
             { new: true }
         );
         res.json({ success: true, message: 'Booking updated!', data: booking });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.get('/api/bookings', async (req, res) => {
-    try {
-        const bookings = await Booking.find().sort({ createdAt: -1 });
-        res.json({ success: true, data: bookings });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -583,389 +611,54 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-app.get('/api/contacts', async (req, res) => {
-    try {
-        const contacts = await Contact.find().sort({ createdAt: -1 });
-        res.json({ success: true, data: contacts });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
 // ============================================
-// SEED DATABASE - NYC SITTERS
+// SEED DATABASE
 // ============================================
 app.get('/api/seed', async (req, res) => {
     try {
         await Breed.deleteMany({});
-        await Sitter.deleteMany({});
+        // Only delete sitters without userId (seed data, not real users)
+        await Sitter.deleteMany({ userId: { $exists: false } });
+        await Sitter.deleteMany({ userId: null });
 
-        // CAT BREEDS
         const breeds = [
-            {
-                id: 'persian',
-                name: 'Persian',
-                emoji: '👑',
-                tagline: 'The Glamorous Royalty',
-                overview: 'Persian cats are known for their long, luxurious coats and sweet, gentle personalities.',
-                traits: ['Calm', 'Affectionate', 'Quiet', 'Loyal'],
-                care: 'Daily brushing required. Keep eyes clean.',
-                bestFor: 'Quiet homes, seniors, apartments',
-                health: 'Watch for breathing issues and eye problems.',
-                imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Persialainen.jpg?w=400'
-            },
-            {
-                id: 'maine-coon',
-                name: 'Maine Coon',
-                emoji: '🦁',
-                tagline: 'The Gentle Giant',
-                overview: 'Maine Coons are one of the largest domestic cat breeds, known for their friendly nature.',
-                traits: ['Friendly', 'Playful', 'Intelligent', 'Social'],
-                care: 'Regular brushing, lots of playtime.',
-                bestFor: 'Families, homes with other pets',
-                health: 'Watch for hip dysplasia and heart issues.',
-                imageUrl: 'https://framerusercontent.com/images/9vaMYZ1IbMWni6Fxww0r2chMFhc.jpg?width=400'
-            },
-            {
-                id: 'siamese',
-                name: 'Siamese',
-                emoji: '💎',
-                tagline: 'The Vocal Companion',
-                overview: 'Siamese cats are known for their striking blue eyes and vocal personalities.',
-                traits: ['Vocal', 'Social', 'Intelligent', 'Active'],
-                care: 'Needs lots of attention and mental stimulation.',
-                bestFor: 'Active owners who are home often',
-                health: 'Generally healthy, watch for dental issues.',
-                imageUrl: 'https://assets.elanco.com/8e0bf1c2-1ae4-001f-9257-f2be3c683fb1/fca42f04-2474-4302-a238-990c8aebfe8c/Siamese_cat_1110x740.jpg?w=400'
-            },
-            {
-                id: 'british-shorthair',
-                name: 'British Shorthair',
-                emoji: '🧸',
-                tagline: 'The Teddy Bear',
-                overview: 'British Shorthairs are calm, easygoing cats with plush, dense coats.',
-                traits: ['Calm', 'Independent', 'Easygoing', 'Quiet'],
-                care: 'Weekly brushing, moderate exercise.',
-                bestFor: 'Busy professionals, apartments',
-                health: 'Watch for obesity and heart disease.',
-                imageUrl: 'https://cdn.shopify.com/s/files/1/0274/5994/4493/files/BRI_Dad_-_Newtella.png?v=1742455452?w=400'
-            },
-            {
-                id: 'ragdoll',
-                name: 'Ragdoll',
-                emoji: '🪆',
-                tagline: 'The Floppy Friend',
-                overview: 'Ragdolls go limp when picked up and are extremely docile and affectionate.',
-                traits: ['Docile', 'Affectionate', 'Gentle', 'Relaxed'],
-                care: 'Regular brushing, indoor only recommended.',
-                bestFor: 'Families with children, calm homes',
-                health: 'Watch for heart disease and bladder stones.',
-                imageUrl: 'https://www.floppycats.com/wp-content/uploads/2022/09/Ragna-Ragdoll-Cat-of-the-Week-RagnaOutside.jpg?w=400'
-            },
-            {
-                id: 'bengal',
-                name: 'Bengal',
-                emoji: '🐆',
-                tagline: 'The Wild Child',
-                overview: 'Bengals have exotic leopard-like markings and are highly energetic.',
-                traits: ['Energetic', 'Curious', 'Athletic', 'Playful'],
-                care: 'Lots of exercise and enrichment needed.',
-                bestFor: 'Active owners, large spaces',
-                health: 'Generally healthy, watch for heart issues.',
-                imageUrl: 'https://image.petmd.com/files/inline-images/bengal-cat.jpeg?VersionId=X0xkDftr_klFvUhQpLarkxvJBbnUAd01?w=400'
-            },
-            {
-                id: 'scottish-fold',
-                name: 'Scottish Fold',
-                emoji: '🦉',
-                tagline: 'The Owl Cat',
-                overview: 'Scottish Folds have unique folded ears and owl-like expressions.',
-                traits: ['Sweet', 'Adaptable', 'Playful', 'Loving'],
-                care: 'Regular ear cleaning, moderate grooming.',
-                bestFor: 'Any home, good with children',
-                health: 'Watch for joint issues.',
-                imageUrl: 'https://cdn.wamiz.fr/cdn-cgi/image/format=auto,quality=80,width=720,height=405,fit=cover/animal/breed/cat/adult/6687c811719fb656583283.jpg?w=400'
-            },
-            {
-                id: 'sphynx',
-                name: 'Sphynx',
-                emoji: '👽',
-                tagline: 'The Naked Wonder',
-                overview: 'Sphynx cats are hairless and known for their warmth-seeking behavior.',
-                traits: ['Affectionate', 'Energetic', 'Social', 'Curious'],
-                care: 'Regular baths, keep warm, sun protection.',
-                bestFor: 'Allergy sufferers, attentive owners',
-                health: 'Watch for skin issues and heart disease.',
-                imageUrl: 'https://images.squarespace-cdn.com/content/v1/54822a56e4b0b30bd821480c/1672325275441-8O2J3VIWG1ZWAOAOPQ7V/sphynx.jpg?w=400'
-            },
-            {
-                id: 'abyssinian',
-                name: 'Abyssinian',
-                emoji: '🏃',
-                tagline: 'The Busy Explorer',
-                overview: 'Abyssinians are active, curious cats who love to climb and explore.',
-                traits: ['Active', 'Curious', 'Intelligent', 'Playful'],
-                care: 'Lots of vertical space and toys needed.',
-                bestFor: 'Active families, multi-cat homes',
-                health: 'Watch for kidney disease.',
-                imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_2G2ALwTk3GqXxMGAvnx1vncNYnR_r6uWfiFwUxNOYl6_ME-9YbUJLVjEoGBhTxnKN9amOjfThZ35ikzgXpBIcb9uxaSEvRbMzWpjM0s&s=10?w=400'
-            },
-            {
-                id: 'russian-blue',
-                name: 'Russian Blue',
-                emoji: '💙',
-                tagline: 'The Shy Sweetheart',
-                overview: 'Russian Blues have beautiful silver-blue coats and are quietly affectionate.',
-                traits: ['Shy', 'Loyal', 'Quiet', 'Gentle'],
-                care: 'Low maintenance, weekly brushing.',
-                bestFor: 'Quiet homes, singles, seniors',
-                health: 'Generally very healthy breed.',
-                imageUrl: 'https://rawznaturalpetfood.com/wp-content/uploads/2021/05/russian-blue-cats.jpg?w=400'
-            },
-            {
-                id: 'norwegian-forest',
-                name: 'Norwegian Forest',
-                emoji: '🌲',
-                tagline: 'The Viking Cat',
-                overview: 'Norwegian Forest Cats are large, fluffy cats built for cold climates.',
-                traits: ['Independent', 'Friendly', 'Athletic', 'Patient'],
-                care: 'Regular brushing, especially in spring.',
-                bestFor: 'Families, homes with outdoor access',
-                health: 'Watch for heart and kidney issues.',
-                imageUrl: 'https://image.petmd.com/files/styles/863x625/public/2023-04/norwegian-forest-cat.jpg?w=400'
-            },
-            {
-                id: 'american-shorthair',
-                name: 'American Shorthair',
-                emoji: '🇺🇸',
-                tagline: 'The All-American',
-                overview: 'American Shorthairs are adaptable, friendly cats great for any family.',
-                traits: ['Adaptable', 'Friendly', 'Easy-going', 'Healthy'],
-                care: 'Low maintenance, weekly brushing.',
-                bestFor: 'Families, first-time cat owners',
-                health: 'Watch for obesity.',
-                imageUrl: 'https://framerusercontent.com/images/zrmhsmoFui8gk0S3XnUFkpo10hs.jpg?w=400'
-            }
+            { id: 'persian', name: 'Persian', emoji: '👑', tagline: 'The Glamorous Royalty', overview: 'Persian cats are known for their long, luxurious coats and sweet, gentle personalities.', traits: ['Calm', 'Affectionate', 'Quiet', 'Loyal'], care: 'Daily brushing required. Keep eyes clean.', bestFor: 'Quiet homes, seniors, apartments', health: 'Watch for breathing issues and eye problems.', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Persialainen.jpg?w=400' },
+            { id: 'maine-coon', name: 'Maine Coon', emoji: '🦁', tagline: 'The Gentle Giant', overview: 'Maine Coons are one of the largest domestic cat breeds, known for their friendly nature.', traits: ['Friendly', 'Playful', 'Intelligent', 'Social'], care: 'Regular brushing, lots of playtime.', bestFor: 'Families, homes with other pets', health: 'Watch for hip dysplasia and heart issues.', imageUrl: 'https://framerusercontent.com/images/9vaMYZ1IbMWni6Fxww0r2chMFhc.jpg?width=400' },
+            { id: 'siamese', name: 'Siamese', emoji: '💎', tagline: 'The Vocal Companion', overview: 'Siamese cats are known for their striking blue eyes and vocal personalities.', traits: ['Vocal', 'Social', 'Intelligent', 'Active'], care: 'Needs lots of attention and mental stimulation.', bestFor: 'Active owners who are home often', health: 'Generally healthy, watch for dental issues.', imageUrl: 'https://assets.elanco.com/8e0bf1c2-1ae4-001f-9257-f2be3c683fb1/fca42f04-2474-4302-a238-990c8aebfe8c/Siamese_cat_1110x740.jpg?w=400' },
+            { id: 'british-shorthair', name: 'British Shorthair', emoji: '🧸', tagline: 'The Teddy Bear', overview: 'British Shorthairs are calm, easygoing cats with plush, dense coats.', traits: ['Calm', 'Independent', 'Easygoing', 'Quiet'], care: 'Weekly brushing, moderate exercise.', bestFor: 'Busy professionals, apartments', health: 'Watch for obesity and heart disease.', imageUrl: 'https://cdn.shopify.com/s/files/1/0274/5994/4493/files/BRI_Dad_-_Newtella.png?v=1742455452?w=400' },
+            { id: 'ragdoll', name: 'Ragdoll', emoji: '🪆', tagline: 'The Floppy Friend', overview: 'Ragdolls go limp when picked up and are extremely docile and affectionate.', traits: ['Docile', 'Affectionate', 'Gentle', 'Relaxed'], care: 'Regular brushing, indoor only recommended.', bestFor: 'Families with children, calm homes', health: 'Watch for heart disease and bladder stones.', imageUrl: 'https://www.floppycats.com/wp-content/uploads/2022/09/Ragna-Ragdoll-Cat-of-the-Week-RagnaOutside.jpg?w=400' },
+            { id: 'bengal', name: 'Bengal', emoji: '🐆', tagline: 'The Wild Child', overview: 'Bengals have exotic leopard-like markings and are highly energetic.', traits: ['Energetic', 'Curious', 'Athletic', 'Playful'], care: 'Lots of exercise and enrichment needed.', bestFor: 'Active owners, large spaces', health: 'Generally healthy, watch for heart issues.', imageUrl: 'https://image.petmd.com/files/inline-images/bengal-cat.jpeg?VersionId=X0xkDftr_klFvUhQpLarkxvJBbnUAd01?w=400' },
+            { id: 'scottish-fold', name: 'Scottish Fold', emoji: '🦉', tagline: 'The Owl Cat', overview: 'Scottish Folds have unique folded ears and owl-like expressions.', traits: ['Sweet', 'Adaptable', 'Playful', 'Loving'], care: 'Regular ear cleaning, moderate grooming.', bestFor: 'Any home, good with children', health: 'Watch for joint issues.', imageUrl: 'https://cdn.wamiz.fr/cdn-cgi/image/format=auto,quality=80,width=720,height=405,fit=cover/animal/breed/cat/adult/6687c811719fb656583283.jpg?w=400' },
+            { id: 'sphynx', name: 'Sphynx', emoji: '👽', tagline: 'The Naked Wonder', overview: 'Sphynx cats are hairless and known for their warmth-seeking behavior.', traits: ['Affectionate', 'Energetic', 'Social', 'Curious'], care: 'Regular baths, keep warm, sun protection.', bestFor: 'Allergy sufferers, attentive owners', health: 'Watch for skin issues and heart disease.', imageUrl: 'https://images.squarespace-cdn.com/content/v1/54822a56e4b0b30bd821480c/1672325275441-8O2J3VIWG1ZWAOAOPQ7V/sphynx.jpg?w=400' },
+            { id: 'abyssinian', name: 'Abyssinian', emoji: '🏃', tagline: 'The Busy Explorer', overview: 'Abyssinians are active, curious cats who love to climb and explore.', traits: ['Active', 'Curious', 'Intelligent', 'Playful'], care: 'Lots of vertical space and toys needed.', bestFor: 'Active families, multi-cat homes', health: 'Watch for kidney disease.', imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_2G2ALwTk3GqXxMGAvnx1vncNYnR_r6uWfiFwUxNOYl6_ME-9YbUJLVjEoGBhTxnKN9amOjfThZ35ikzgXpBIcb9uxaSEvRbMzWpjM0s&s=10?w=400' },
+            { id: 'russian-blue', name: 'Russian Blue', emoji: '💙', tagline: 'The Shy Sweetheart', overview: 'Russian Blues have beautiful silver-blue coats and are quietly affectionate.', traits: ['Shy', 'Loyal', 'Quiet', 'Gentle'], care: 'Low maintenance, weekly brushing.', bestFor: 'Quiet homes, singles, seniors', health: 'Generally very healthy breed.', imageUrl: 'https://rawznaturalpetfood.com/wp-content/uploads/2021/05/russian-blue-cats.jpg?w=400' },
+            { id: 'norwegian-forest', name: 'Norwegian Forest', emoji: '🌲', tagline: 'The Viking Cat', overview: 'Norwegian Forest Cats are large, fluffy cats built for cold climates.', traits: ['Independent', 'Friendly', 'Athletic', 'Patient'], care: 'Regular brushing, especially in spring.', bestFor: 'Families, homes with outdoor access', health: 'Watch for heart and kidney issues.', imageUrl: 'https://image.petmd.com/files/styles/863x625/public/2023-04/norwegian-forest-cat.jpg?w=400' },
+            { id: 'american-shorthair', name: 'American Shorthair', emoji: '🇺🇸', tagline: 'The All-American', overview: 'American Shorthairs are adaptable, friendly cats great for any family.', traits: ['Adaptable', 'Friendly', 'Easy-going', 'Healthy'], care: 'Low maintenance, weekly brushing.', bestFor: 'Families, first-time cat owners', health: 'Watch for obesity.', imageUrl: 'https://framerusercontent.com/images/zrmhsmoFui8gk0S3XnUFkpo10hs.jpg?w=400' }
         ];
 
-        // NYC SITTERS - 2 per borough (10 total)
         const sitters = [
-            // MANHATTAN
-            {
-                name: 'Sarah Chen',
-                email: 'sarah.chen@email.com',
-                phone: '(212) 555-0101',
-                borough: 'Manhattan',
-                neighborhood: 'Upper East Side',
-                rate: 55,
-                rateDisplay: '$55/day',
-                rating: 4.9,
-                reviewCount: 47,
-                experience: '6 years',
-                specialties: ['Senior cats', 'Medical care', 'Medication administration'],
-                bio: 'Certified vet tech with 6 years experience. I specialize in senior cats and those with medical needs. Your fur baby will receive loving care!',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-                availability: true
-            },
-            {
-                name: 'Michael Torres',
-                email: 'michael.t@email.com',
-                phone: '(212) 555-0102',
-                borough: 'Manhattan',
-                neighborhood: 'Hells Kitchen',
-                rate: 50,
-                rateDisplay: '$50/day',
-                rating: 4.8,
-                reviewCount: 32,
-                experience: '4 years',
-                specialties: ['Kittens', 'Multiple cats', 'Playtime expert'],
-                bio: 'Cat dad of 3 rescue kitties! I work from home so your cats have company all day. Photo and video updates included!',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-                availability: true
-            },
-            // BROOKLYN
-            {
-                name: 'Emily Rodriguez',
-                email: 'emily.r@email.com',
-                phone: '(347) 555-0201',
-                borough: 'Brooklyn',
-                neighborhood: 'Park Slope',
-                rate: 48,
-                rateDisplay: '$48/day',
-                rating: 5.0,
-                reviewCount: 56,
-                experience: '7 years',
-                specialties: ['Anxious cats', 'Special needs', 'Behavioral issues'],
-                bio: 'Former animal shelter volunteer with animal behavior degree. I specialize in anxious and special needs cats.',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200',
-                availability: true
-            },
-            {
-                name: 'James Wright',
-                email: 'james.w@email.com',
-                phone: '(347) 555-0202',
-                borough: 'Brooklyn',
-                neighborhood: 'Williamsburg',
-                rate: 45,
-                rateDisplay: '$45/day',
-                rating: 4.7,
-                reviewCount: 28,
-                experience: '3 years',
-                specialties: ['Active breeds', 'Bengals', 'Young cats'],
-                bio: 'Large cat-proofed apartment with cat trees, tunnels, and toys. Perfect for active cats who need stimulation!',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-                availability: true
-            },
-            // QUEENS
-            {
-                name: 'Priya Patel',
-                email: 'priya.p@email.com',
-                phone: '(718) 555-0301',
-                borough: 'Queens',
-                neighborhood: 'Astoria',
-                rate: 42,
-                rateDisplay: '$42/day',
-                rating: 4.9,
-                reviewCount: 41,
-                experience: '5 years',
-                specialties: ['Multiple cats', 'Dietary needs', 'Senior cats'],
-                bio: 'I treat every cat like royalty! 5 years experience with cats of all personalities. Quiet, clean home with no other pets.',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200',
-                availability: true
-            },
-            {
-                name: 'David Kim',
-                email: 'david.k@email.com',
-                phone: '(718) 555-0302',
-                borough: 'Queens',
-                neighborhood: 'Forest Hills',
-                rate: 40,
-                rateDisplay: '$40/day',
-                rating: 4.6,
-                reviewCount: 19,
-                experience: '2 years',
-                specialties: ['Kittens', 'Siamese', 'Vocal cats'],
-                bio: 'Cat enthusiast with special love for vocal breeds! Flexible hours and lots of one-on-one attention.',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
-                availability: true
-            },
-            // BRONX
-            {
-                name: 'Maria Santos',
-                email: 'maria.s@email.com',
-                phone: '(718) 555-0401',
-                borough: 'Bronx',
-                neighborhood: 'Riverdale',
-                rate: 38,
-                rateDisplay: '$38/day',
-                rating: 4.8,
-                reviewCount: 35,
-                experience: '8 years',
-                specialties: ['Senior cats', 'Medical care', 'Hospice care'],
-                bio: '8 years experience including veterinary clinic work. Specializing in senior cats and medical attention.',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200',
-                availability: true
-            },
-            {
-                name: 'Anthony Johnson',
-                email: 'anthony.j@email.com',
-                phone: '(718) 555-0402',
-                borough: 'Bronx',
-                neighborhood: 'Pelham Bay',
-                rate: 35,
-                rateDisplay: '$35/day',
-                rating: 4.5,
-                reviewCount: 15,
-                experience: '2 years',
-                specialties: ['Outdoor cats', 'Multiple cats', 'Budget-friendly'],
-                bio: 'Affordable, reliable cat sitting! Secure backyard catio for cats who enjoy fresh air. Daily updates included!',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200',
-                availability: true
-            },
-            // STATEN ISLAND
-            {
-                name: 'Jennifer Liu',
-                email: 'jennifer.l@email.com',
-                phone: '(718) 555-0501',
-                borough: 'Staten Island',
-                neighborhood: 'St. George',
-                rate: 40,
-                rateDisplay: '$40/day',
-                rating: 4.9,
-                reviewCount: 38,
-                experience: '5 years',
-                specialties: ['Persians', 'Long-haired breeds', 'Grooming'],
-                bio: 'Experienced with long-haired breeds and show cats. Grooming services included to keep coats beautiful!',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200',
-                availability: true
-            },
-            {
-                name: 'Robert Martinez',
-                email: 'robert.m@email.com',
-                phone: '(718) 555-0502',
-                borough: 'Staten Island',
-                neighborhood: 'Tottenville',
-                rate: 36,
-                rateDisplay: '$36/day',
-                rating: 4.7,
-                reviewCount: 22,
-                experience: '3 years',
-                specialties: ['Rescue cats', 'Shy cats', 'Quiet environment'],
-                bio: 'Quiet home perfect for shy or anxious cats. Former rescue volunteer - I understand cats needing extra patience.',
-                verified: true,
-                imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200',
-                availability: true
-            }
+            { name: 'Sarah Chen', email: 'sarah.chen@email.com', phone: '(212) 555-0101', borough: 'Manhattan', neighborhood: 'Upper East Side', rate: 55, rateDisplay: '$55/day', rating: 4.9, reviewCount: 47, experience: '6 years', specialties: ['Senior cats', 'Medical care', 'Medication administration'], bio: 'Certified vet tech with 6 years experience. I specialize in senior cats and those with medical needs.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200', availability: true },
+            { name: 'Michael Torres', email: 'michael.t@email.com', phone: '(212) 555-0102', borough: 'Manhattan', neighborhood: 'Hells Kitchen', rate: 50, rateDisplay: '$50/day', rating: 4.8, reviewCount: 32, experience: '4 years', specialties: ['Kittens', 'Multiple cats', 'Playtime expert'], bio: 'Cat dad of 3 rescue kitties! I work from home so your cats have company all day.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', availability: true },
+            { name: 'Emily Rodriguez', email: 'emily.r@email.com', phone: '(347) 555-0201', borough: 'Brooklyn', neighborhood: 'Park Slope', rate: 48, rateDisplay: '$48/day', rating: 5.0, reviewCount: 56, experience: '7 years', specialties: ['Anxious cats', 'Special needs', 'Behavioral issues'], bio: 'Former animal shelter volunteer with animal behavior degree.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200', availability: true },
+            { name: 'James Wright', email: 'james.w@email.com', phone: '(347) 555-0202', borough: 'Brooklyn', neighborhood: 'Williamsburg', rate: 45, rateDisplay: '$45/day', rating: 4.7, reviewCount: 28, experience: '3 years', specialties: ['Active breeds', 'Bengals', 'Young cats'], bio: 'Large cat-proofed apartment with cat trees, tunnels, and toys.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200', availability: true },
+            { name: 'Priya Patel', email: 'priya.p@email.com', phone: '(718) 555-0301', borough: 'Queens', neighborhood: 'Astoria', rate: 42, rateDisplay: '$42/day', rating: 4.9, reviewCount: 41, experience: '5 years', specialties: ['Multiple cats', 'Dietary needs', 'Senior cats'], bio: 'I treat every cat like royalty! 5 years experience with cats of all personalities.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200', availability: true },
+            { name: 'David Kim', email: 'david.k@email.com', phone: '(718) 555-0302', borough: 'Queens', neighborhood: 'Forest Hills', rate: 40, rateDisplay: '$40/day', rating: 4.6, reviewCount: 19, experience: '2 years', specialties: ['Kittens', 'Siamese', 'Vocal cats'], bio: 'Cat enthusiast with special love for vocal breeds!', verified: true, imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200', availability: true },
+            { name: 'Maria Santos', email: 'maria.s@email.com', phone: '(718) 555-0401', borough: 'Bronx', neighborhood: 'Riverdale', rate: 38, rateDisplay: '$38/day', rating: 4.8, reviewCount: 35, experience: '8 years', specialties: ['Senior cats', 'Medical care', 'Hospice care'], bio: '8 years experience including veterinary clinic work.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200', availability: true },
+            { name: 'Anthony Johnson', email: 'anthony.j@email.com', phone: '(718) 555-0402', borough: 'Bronx', neighborhood: 'Pelham Bay', rate: 35, rateDisplay: '$35/day', rating: 4.5, reviewCount: 15, experience: '2 years', specialties: ['Outdoor cats', 'Multiple cats', 'Budget-friendly'], bio: 'Affordable, reliable cat sitting! Secure backyard catio for cats.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200', availability: true },
+            { name: 'Jennifer Liu', email: 'jennifer.l@email.com', phone: '(718) 555-0501', borough: 'Staten Island', neighborhood: 'St. George', rate: 40, rateDisplay: '$40/day', rating: 4.9, reviewCount: 38, experience: '5 years', specialties: ['Persians', 'Long-haired breeds', 'Grooming'], bio: 'Experienced with long-haired breeds and show cats.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200', availability: true },
+            { name: 'Robert Martinez', email: 'robert.m@email.com', phone: '(718) 555-0502', borough: 'Staten Island', neighborhood: 'Tottenville', rate: 36, rateDisplay: '$36/day', rating: 4.7, reviewCount: 22, experience: '3 years', specialties: ['Rescue cats', 'Shy cats', 'Quiet environment'], bio: 'Quiet home perfect for shy or anxious cats.', verified: true, imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200', availability: true }
         ];
 
         await Breed.insertMany(breeds);
         await Sitter.insertMany(sitters);
 
-        res.json({
-            success: true,
-            message: 'Database seeded successfully!',
-            data: { breeds: breeds.length, sitters: sitters.length }
-        });
-
+        res.json({ success: true, message: 'Database seeded successfully!', data: { breeds: breeds.length, sitters: sitters.length } });
     } catch (error) {
         console.error('Seed error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ============================================
-// START SERVER
-// ============================================
 app.listen(PORT, () => {
-    console.log(`
-    ✅ Server is running!
-    🌐 Open: http://localhost:${PORT}
-    
-    📊 API Endpoints:
-       Auth:
-       - POST /api/auth/register
-       - POST /api/auth/login
-       - POST /api/auth/logout
-       - GET  /api/auth/me
-       
-       Data:
-       - GET  /api/breeds
-       - GET  /api/sitters (supports ?borough=&minRate=&maxRate=&specialty=&search=)
-       - GET  /api/sitters/:id
-       - POST /api/bookings
-       - GET  /api/bookings/my
-       - POST /api/reviews
-       
-       Setup:
-       - GET  /api/seed
-    `);
+    console.log(`✅ Server running on http://localhost:${PORT}`);
 });
