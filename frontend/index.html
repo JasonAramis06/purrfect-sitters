@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purrfect Sitters - NYC Cat Sitting Service</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        
+        nav { background: rgba(255,255,255,0.95); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 20px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: 700; color: #764ba2; cursor: pointer; }
+        .logo span { color: #667eea; }
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; cursor: pointer; }
+        .nav-links a:hover { color: #764ba2; }
+        
+        .btn { padding: 12px 30px; border: none; border-radius: 25px; font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-block; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .btn-secondary { background: white; color: #764ba2; border: 2px solid #764ba2; }
+        .btn-secondary:hover { background: #764ba2; color: white; }
+        .btn-small { padding: 8px 20px; font-size: 14px; }
+        
+        .page { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .page.active { display: block; }
+        
+        .hero { text-align: center; padding: 80px 20px; color: white; }
+        .hero h1 { font-size: 48px; margin-bottom: 20px; }
+        .hero p { font-size: 20px; margin-bottom: 30px; opacity: 0.9; }
+        .hero-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 30px; }
+        
+        .sitter-card, .breed-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .sitter-card:hover, .breed-card:hover { transform: translateY(-5px); }
+        .sitter-card img, .breed-card img { width: 100%; height: 200px; object-fit: cover; }
+        .sitter-card-body, .breed-card-body { padding: 20px; }
+        .sitter-card h3, .breed-card h3 { color: #333; margin-bottom: 5px; }
+        .breed-card { cursor: pointer; }
+        .breed-card p { color: #666; font-size: 14px; }
+        
+        .sitter-location { color: #667eea; font-size: 14px; margin-bottom: 10px; }
+        .sitter-rating { color: #f39c12; margin-bottom: 10px; }
+        .sitter-specialties { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        .specialty-tag { background: #f0f0ff; color: #667eea; padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+        .sitter-price { font-size: 20px; font-weight: 700; color: #764ba2; margin-bottom: 15px; }
+        
+        .filters { background: white; border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+        .filters h3 { margin-bottom: 20px; color: #333; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .filter-group { flex: 1; min-width: 150px; }
+        .filter-group label { display: block; margin-bottom: 5px; color: #666; font-size: 14px; }
+        .filter-group select, .filter-group input { width: 100%; padding: 10px 15px; border: 2px solid #eee; border-radius: 10px; font-family: 'Poppins', sans-serif; }
+        .filter-group select:focus, .filter-group input:focus { outline: none; border-color: #667eea; }
+        
+        .form-container { background: white; border-radius: 20px; padding: 40px; max-width: 500px; margin: 50px auto; }
+        .form-container h2 { text-align: center; margin-bottom: 30px; color: #333; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; font-family: 'Poppins', sans-serif; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-footer { text-align: center; margin-top: 20px; color: #666; }
+        .form-footer a { color: #667eea; cursor: pointer; font-weight: 500; }
+        
+        .alert { padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        
+        .dashboard-header { background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 15px; padding: 25px; text-align: center; }
+        .stat-card h3 { font-size: 36px; color: #667eea; }
+        .stat-card p { color: #666; }
+        
+        .booking-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .booking-info h4 { color: #333; margin-bottom: 5px; }
+        .booking-info p { color: #666; font-size: 14px; }
+        .booking-status { padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-completed { background: #cce5ff; color: #004085; }
+        
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .detail-img { border-radius: 20px; overflow: hidden; }
+        .detail-img img { width: 100%; height: 400px; object-fit: cover; }
+        .detail-info { background: white; border-radius: 20px; padding: 30px; }
+        .detail-info h2 { margin-bottom: 10px; color: #333; }
+        .trait-tags { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .trait-tag { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
+        
+        .section-header { color: white; text-align: center; margin-bottom: 30px; }
+        .section-header h2 { font-size: 36px; margin-bottom: 10px; }
+        
+        .review-card { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .review-card .stars { color: #f39c12; }
+        
+        footer { background: rgba(0,0,0,0.2); color: white; text-align: center; padding: 30px; margin-top: 50px; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .detail-grid { grid-template-columns: 1fr; }
+            .filter-row { flex-direction: column; }
+            .nav-links a:not(.btn) { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo" onclick="showPage('home')">🐱 Purrfect<span>Sitters</span></div>
+        <div class="nav-links">
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('sitters')">Find Sitters</a>
+            <a onclick="showPage('breeds')">Cat Breeds</a>
+            <a onclick="showPage('contact')">Contact</a>
+            <div id="auth-buttons">
+                <a class="btn btn-secondary btn-small" onclick="showPage('login')">Login</a>
+                <a class="btn btn-primary btn-small" onclick="showPage('register')">Sign Up</a>
+            </div>
+            <div id="user-menu" style="display:none;">
+                <span id="user-name"></span>
+                <a class="btn btn-secondary btn-small" onclick="showPage('dashboard')">Dashboard</a>
+                <a class="btn btn-primary btn-small" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="home" class="page active">
+        <div class="hero">
+            <h1>🐱 Find the Purrfect Cat Sitter in NYC</h1>
+            <p>Trusted, verified cat sitters across all five boroughs</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="showPage('sitters')">Find a Sitter</button>
+                <button class="btn btn-secondary" onclick="showPage('register')">Become a Sitter</button>
+            </div>
+        </div>
+        <div class="section-header"><h2>Popular Cat Breeds</h2></div>
+        <div class="card-grid" id="home-breeds"></div>
+        <div class="section-header" style="margin-top:60px;"><h2>Top Rated Sitters</h2></div>
+        <div class="card-grid" id="home-sitters"></div>
+    </div>
+
+    <div id="sitters" class="page">
+        <div class="section-header"><h2>Find Your Cat Sitter</h2><p>Browse trusted sitters across NYC</p></div>
+        <div class="filters">
+            <h3>🔍 Filter Sitters</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Borough</label>
+                    <select id="filter-borough" onchange="filterSitters()">
+                        <option value="all">All Boroughs</option>
+                        <option value="Manhattan">Manhattan</option>
+                        <option value="Brooklyn">Brooklyn</option>
+                        <option value="Queens">Queens</option>
+                        <option value="Bronx">Bronx</option>
+                        <option value="Staten Island">Staten Island</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Max Price</label>
+                    <input type="number" id="filter-max-price" placeholder="$100" onchange="filterSitters()">
+                </div>
+                <div class="filter-group">
+                    <label>Specialty</label>
+                    <select id="filter-specialty" onchange="filterSitters()">
+                        <option value="all">All Specialties</option>
+                        <option value="Senior cats">Senior Cats</option>
+                        <option value="Kittens">Kittens</option>
+                        <option value="Medical care">Medical Care</option>
+                        <option value="Anxious cats">Anxious Cats</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" id="filter-search" placeholder="Name or area..." onkeyup="filterSitters()">
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-secondary btn-small" onclick="clearFilters()">Clear</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-grid" id="sitters-list"></div>
+    </div>
+
+    <div id="sitter-detail" class="page">
+        <div class="detail-grid">
+            <div class="detail-img" id="sitter-detail-img"></div>
+            <div class="detail-info" id="sitter-detail-info"></div>
+        </div>
+        <div style="margin-top:30px;">
+            <h3 style="color:white;margin-bottom:20px;">Reviews</h3>
+            <div id="sitter-reviews"></div>
+        </div>
+    </div>
+
+    <div id="breeds" class="page">
+        <div class="section-header"><h2>Cat Breed Guide</h2></div>
+        <div class="card-grid" id="breeds-list"></div>
+    </div>
+
+    <div id="breed-detail" class="page">
+        <div class="detail-grid">
+            <div class="detail-img" id="breed-detail-img"></div>
+            <div class="detail-info" id="breed-detail-info"></div>
+        </div>
+    </div>
+
+    <div id="login" class="page">
+        <div class="form-container">
+            <h2>🐱 Welcome Back!</h2>
+            <div id="login-alert"></div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group"><label>Email</label><input type="email" id="login-email" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="login-password" required></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+            </form>
+            <p class="form-footer">Don't have an account? <a onclick="showPage('register')">Sign up</a></p>
+        </div>
+    </div>
+
+    <div id="register" class="page">
+        <div class="form-container">
+            <h2>🐱 Join Purrfect Sitters</h2>
+            <div id="register-alert"></div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group"><label>I am a...</label>
+                    <select id="register-type" required>
+                        <option value="">Select type</option>
+                        <option value="owner">Cat Owner</option>
+                        <option value="sitter">Cat Sitter</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>First Name</label><input type="text" id="register-firstname" required></div>
+                <div class="form-group"><label>Last Name</label><input type="text" id="register-lastname" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="register-email" required></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="register-phone"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="register-password" required minlength="6"></div>
+                <div class="form-group"><label>Confirm Password</label><input type="password" id="register-confirm" required></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Create Account</button>
+            </form>
+            <p class="form-footer">Have an account? <a onclick="showPage('login')">Login</a></p>
+        </div>
+    </div>
+
+    <div id="dashboard" class="page">
+        <div class="dashboard-header">
+            <h2 id="dashboard-welcome">Welcome!</h2>
+            <p id="dashboard-type"></p>
+        </div>
+        <div class="stats-grid" id="dashboard-stats"></div>
+        <div style="background:white;border-radius:20px;padding:30px;">
+            <h3 style="margin-bottom:20px;">Your Bookings</h3>
+            <div id="dashboard-bookings"></div>
+        </div>
+        <div id="sitter-profile-section" style="display:none;margin-top:30px;">
+            <div style="background:white;border-radius:20px;padding:30px;">
+                <h3>Your Sitter Profile</h3>
+                <form onsubmit="updateSitterProfile(event)" id="sitter-profile-form"></form>
+            </div>
+        </div>
+    </div>
+
+    <div id="contact" class="page">
+        <div class="form-container" style="max-width:600px;">
+            <h2>📞 Contact Us</h2>
+            <div id="contact-alert"></div>
+            <form onsubmit="handleContact(event)">
+                <div class="form-group"><label>Name</label><input type="text" id="contact-name" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="contact-email" required></div>
+                <div class="form-group"><label>Subject</label>
+                    <select id="contact-subject" required>
+                        <option value="">Select</option>
+                        <option>General Inquiry</option>
+                        <option>Booking Question</option>
+                        <option>Technical Support</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Message</label><textarea id="contact-message" required></textarea></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="booking-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Book a Sitter</h3>
+                <button class="modal-close" onclick="closeModal('booking-modal')">&times;</button>
+            </div>
+            <div id="booking-alert"></div>
+            <form onsubmit="handleBooking(event)">
+                <input type="hidden" id="booking-sitter-id">
+                <input type="hidden" id="booking-sitter-rate">
+                <div class="form-group"><label>Sitter</label><input type="text" id="booking-sitter-name" readonly></div>
+                <div class="form-group"><label>Cat's Name</label><input type="text" id="booking-cat-name" required></div>
+                <div class="form-group"><label>Breed</label><select id="booking-cat-breed" required></select></div>
+                <div class="form-group"><label>Start Date</label><input type="date" id="booking-start" required onchange="updateBookingSummary()"></div>
+                <div class="form-group"><label>End Date</label><input type="date" id="booking-end" required onchange="updateBookingSummary()"></div>
+                <div class="form-group"><label>Special Instructions</label><textarea id="booking-instructions"></textarea></div>
+                <div id="booking-summary" style="background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:20px;"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="review-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Leave a Review</h3>
+                <button class="modal-close" onclick="closeModal('review-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleReview(event)">
+                <input type="hidden" id="review-sitter-id">
+                <div class="form-group"><label>Rating</label>
+                    <select id="review-rating" required>
+                        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                        <option value="4">⭐⭐⭐⭐ Great</option>
+                        <option value="3">⭐⭐⭐ Good</option>
+                        <option value="2">⭐⭐ Fair</option>
+                        <option value="1">⭐ Poor</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Your Review</label><textarea id="review-comment" required></textarea></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>🐱 Purrfect Sitters © 2024 | NYC's Premier Cat Sitting Service</p>
+    </footer>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let currentUser = null;
+        let allBreeds = [];
+
+        async function init() {
+            await checkAuth();
+            loadHomeBreeds();
+            loadHomeSitters();
+            loadAllBreeds();
+        }
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(API + '/auth/me', { credentials: 'include' });
+                const data = await res.json();
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    document.getElementById('auth-buttons').style.display = 'none';
+                    document.getElementById('user-menu').style.display = 'flex';
+                    document.getElementById('user-name').textContent = 'Hi, ' + currentUser.firstName + '!';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0, 0);
+            if (id === 'dashboard') loadDashboard();
+            if (id === 'sitters') loadAllSitters();
+            if (id === 'breeds') loadAllBreeds();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    email: document.getElementById('login-email').value,
+                    password: document.getElementById('login-password').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                document.getElementById('auth-buttons').style.display = 'none';
+                document.getElementById('user-menu').style.display = 'flex';
+                document.getElementById('user-name').textContent = 'Hi, ' + currentUser.firstName + '!';
+                document.getElementById('login-alert').innerHTML = '<div class="alert alert-success">Login successful!</div>';
+                setTimeout(() => showPage('dashboard'), 1000);
+            } else {
+                document.getElementById('login-alert').innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            if (document.getElementById('register-password').value !== document.getElementById('register-confirm').value) {
+                document.getElementById('register-alert').innerHTML = '<div class="alert alert-error">Passwords do not match!</div>';
+                return;
+            }
+            const res = await fetch(API + '/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userType: document.getElementById('register-type').value,
+                    firstName: document.getElementById('register-firstname').value,
+                    lastName: document.getElementById('register-lastname').value,
+                    email: document.getElementById('register-email').value,
+                    phone: document.getElementById('register-phone').value,
+                    password: document.getElementById('register-password').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                document.getElementById('auth-buttons').style.display = 'none';
+                document.getElementById('user-menu').style.display = 'flex';
+                document.getElementById('user-name').textContent = 'Hi, ' + currentUser.firstName + '!';
+                document.getElementById('register-alert').innerHTML = '<div class="alert alert-success">Account created!</div>';
+                setTimeout(() => showPage('dashboard'), 1000);
+            } else {
+                document.getElementById('register-alert').innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+            }
+        }
+
+        async function logout() {
+            await fetch(API + '/auth/logout', { method: 'POST', credentials: 'include' });
+            currentUser = null;
+            document.getElementById('auth-buttons').style.display = 'flex';
+            document.getElementById('user-menu').style.display = 'none';
+            showPage('home');
+        }
+
+        async function loadHomeBreeds() {
+            const res = await fetch(API + '/breeds');
+            const data = await res.json();
+            if (data.success) {
+                allBreeds = data.data;
+                document.getElementById('home-breeds').innerHTML = data.data.slice(0, 4).map(b => 
+                    '<div class="breed-card" onclick="showBreedDetail(\'' + b.id + '\')"><img src="' + b.imageUrl + '" onerror="this.src=\'https://placekitten.com/400/300\'"><div class="breed-card-body"><h3>' + b.emoji + ' ' + b.name + '</h3><p>' + b.tagline + '</p></div></div>'
+                ).join('');
+            }
+        }
+
+        async function loadAllBreeds() {
+            const res = await fetch(API + '/breeds');
+            const data = await res.json();
+            if (data.success) {
+                allBreeds = data.data;
+                document.getElementById('breeds-list').innerHTML = data.data.map(b => 
+                    '<div class="breed-card" onclick="showBreedDetail(\'' + b.id + '\')"><img src="' + b.imageUrl + '" onerror="this.src=\'https://placekitten.com/400/300\'"><div class="breed-card-body"><h3>' + b.emoji + ' ' + b.name + '</h3><p>' + b.tagline + '</p></div></div>'
+                ).join('');
+                document.getElementById('booking-cat-breed').innerHTML = '<option value="">Select</option>' + data.data.map(b => '<option value="' + b.name + '">' + b.name + '</option>').join('');
+            }
+        }
+
+        function showBreedDetail(id) {
+            const b = allBreeds.find(x => x.id === id);
+            if (!b) return;
+            document.getElementById('breed-detail-img').innerHTML = '<img src="' + b.imageUrl + '">';
+            document.getElementById('breed-detail-info').innerHTML = '<h2>' + b.emoji + ' ' + b.name + '</h2><p style="color:#667eea">' + b.tagline + '</p><div class="trait-tags">' + b.traits.map(t => '<span class="trait-tag">' + t + '</span>').join('') + '</div><h4>Overview</h4><p style="color:#666">' + b.overview + '</p><h4 style="margin-top:15px">Care</h4><p style="color:#666">' + b.care + '</p><h4 style="margin-top:15px">Best For</h4><p style="color:#666">' + b.bestFor + '</p><button class="btn btn-primary" style="margin-top:20px" onclick="showPage(\'sitters\')">Find a Sitter</button>';
+            showPage('breed-detail');
+        }
+
+        async function loadHomeSitters() {
+            const res = await fetch(API + '/sitters');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('home-sitters').innerHTML = data.data.slice(0, 4).map(s => sitterCard(s)).join('');
+            }
+        }
+
+        async function loadAllSitters() {
+            const res = await fetch(API + '/sitters');
+            const data = await res.json();
+            if (data.success) renderSitters(data.data);
+        }
+
+        async function filterSitters() {
+            let url = API + '/sitters?';
+            const b = document.getElementById('filter-borough').value;
+            const m = document.getElementById('filter-max-price').value;
+            const sp = document.getElementById('filter-specialty').value;
+            const sr = document.getElementById('filter-search').value;
+            if (b !== 'all') url += 'borough=' + b + '&';
+            if (m) url += 'maxRate=' + m + '&';
+            if (sp !== 'all') url += 'specialty=' + sp + '&';
+            if (sr) url += 'search=' + sr + '&';
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.success) renderSitters(data.data);
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-borough').value = 'all';
+            document.getElementById('filter-max-price').value = '';
+            document.getElementById('filter-specialty').value = 'all';
+            document.getElementById('filter-search').value = '';
+            loadAllSitters();
+        }
+
+        function renderSitters(sitters) {
+            const c = document.getElementById('sitters-list');
+            if (!sitters.length) { c.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">No sitters found.</p>'; return; }
+            c.innerHTML = sitters.map(s => sitterCard(s)).join('');
+        }
+
+        function sitterCard(s) {
+            return '<div class="sitter-card"><img src="' + s.imageUrl + '" onerror="this.src=\'https://via.placeholder.com/200\'"><div class="sitter-card-body"><h3>' + s.name + (s.verified ? ' ✓' : '') + '</h3><p class="sitter-location">📍 ' + s.neighborhood + ', ' + s.borough + '</p><p class="sitter-rating">' + '⭐'.repeat(Math.floor(s.rating)) + ' ' + s.rating + ' (' + s.reviewCount + ')</p><div class="sitter-specialties">' + s.specialties.slice(0,3).map(x => '<span class="specialty-tag">' + x + '</span>').join('') + '</div><p class="sitter-price">' + s.rateDisplay + '</p><div style="display:flex;gap:10px"><button class="btn btn-secondary btn-small" onclick="showSitterDetail(\'' + s._id + '\')">View</button><button class="btn btn-primary btn-small" onclick="openBooking(\'' + s._id + '\',\'' + s.name + '\',' + s.rate + ')">Book</button></div></div></div>';
+        }
+
+        async function showSitterDetail(id) {
+            const res = await fetch(API + '/sitters/' + id);
+            const data = await res.json();
+            if (data.success) {
+                const s = data.data;
+                document.getElementById('sitter-detail-img').innerHTML = '<img src="' + s.imageUrl + '">';
+                document.getElementById('sitter-detail-info').innerHTML = '<h2>' + s.name + (s.verified ? ' <span style="color:#28a745">✓ Verified</span>' : '') + '</h2><p style="color:#667eea">📍 ' + s.neighborhood + ', ' + s.borough + '</p><p style="color:#f39c12;font-size:18px;margin:10px 0">' + '⭐'.repeat(Math.floor(s.rating)) + ' ' + s.rating + ' (' + s.reviewCount + ' reviews)</p><p class="sitter-price" style="font-size:28px;margin:20px 0">' + s.rateDisplay + '</p><h4>About</h4><p style="color:#666">' + s.bio + '</p><h4 style="margin-top:15px">Experience</h4><p style="color:#666">' + s.experience + '</p><h4 style="margin-top:15px">Specialties</h4><div class="sitter-specialties">' + s.specialties.map(x => '<span class="specialty-tag">' + x + '</span>').join('') + '</div><div style="display:flex;gap:15px;margin-top:25px"><button class="btn btn-primary" onclick="openBooking(\'' + s._id + '\',\'' + s.name + '\',' + s.rate + ')">Book Now</button><button class="btn btn-secondary" onclick="openReview(\'' + s._id + '\')">Leave Review</button></div>';
+                const reviews = s.reviews || [];
+                document.getElementById('sitter-reviews').innerHTML = reviews.length ? reviews.map(r => '<div class="review-card"><div class="stars">' + '⭐'.repeat(r.rating) + '</div><p style="font-weight:500">' + r.ownerName + '</p><p style="color:#666">' + r.comment + '</p></div>').join('') : '<div class="review-card"><p style="color:#666">No reviews yet.</p></div>';
+                showPage('sitter-detail');
+            }
+        }
+
+        function openBooking(id, name, rate) {
+            if (!currentUser) { alert('Please login first'); showPage('login'); return; }
+            document.getElementById('booking-sitter-id').value = id;
+            document.getElementById('booking-sitter-name').value = name;
+            document.getElementById('booking-sitter-rate').value = rate;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('booking-start').min = today;
+            document.getElementById('booking-end').min = today;
+            document.getElementById('booking-summary').innerHTML = '';
+            document.getElementById('booking-modal').classList.add('active');
+        }
+
+        function updateBookingSummary() {
+            const start = document.getElementById('booking-start').value;
+            const end = document.getElementById('booking-end').value;
+            const rate = document.getElementById('booking-sitter-rate').value;
+            if (start && end) {
+                const days = Math.ceil((new Date(end) - new Date(start)) / 86400000) + 1;
+                document.getElementById('booking-summary').innerHTML = '<p><strong>Duration:</strong> ' + days + ' days</p><p><strong>Rate:</strong> $' + rate + '/day</p><p style="font-size:18px;color:#764ba2"><strong>Total: $' + (days * rate) + '</strong></p>';
+            }
+        }
+
+        async function handleBooking(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    sitterId: document.getElementById('booking-sitter-id').value,
+                    catName: document.getElementById('booking-cat-name').value,
+                    catBreed: document.getElementById('booking-cat-breed').value,
+                    startDate: document.getElementById('booking-start').value,
+                    endDate: document.getElementById('booking-end').value,
+                    specialInstructions: document.getElementById('booking-instructions').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('booking-alert').innerHTML = '<div class="alert alert-success">Booking created!</div>';
+                setTimeout(() => { closeModal('booking-modal'); showPage('dashboard'); }, 1500);
+            } else {
+                document.getElementById('booking-alert').innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+            }
+        }
+
+        function openReview(id) {
+            if (!currentUser) { alert('Please login first'); showPage('login'); return; }
+            document.getElementById('review-sitter-id').value = id;
+            document.getElementById('review-modal').classList.add('active');
+        }
+
+        async function handleReview(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    sitterId: document.getElementById('review-sitter-id').value,
+                    rating: parseInt(document.getElementById('review-rating').value),
+                    comment: document.getElementById('review-comment').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Review submitted!');
+                closeModal('review-modal');
+                showSitterDetail(document.getElementById('review-sitter-id').value);
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function loadDashboard() {
+            if (!currentUser) { showPage('login'); return; }
+            document.getElementById('dashboard-welcome').textContent = 'Welcome, ' + currentUser.firstName + '!';
+            document.getElementById('dashboard-type').textContent = currentUser.userType === 'owner' ? 'Cat Owner Account' : 'Cat Sitter Account';
+            
+            const res = await fetch(API + '/bookings/my', { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) {
+                const bookings = data.data;
+                const pending = bookings.filter(b => b.status === 'pending').length;
+                const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+                
+                document.getElementById('dashboard-stats').innerHTML = '<div class="stat-card"><h3>' + bookings.length + '</h3><p>Total Bookings</p></div><div class="stat-card"><h3>' + pending + '</h3><p>Pending</p></div><div class="stat-card"><h3>' + confirmed + '</h3><p>Confirmed</p></div>';
+                
+                document.getElementById('dashboard-bookings').innerHTML = bookings.length ? bookings.map(b => '<div class="booking-card"><div class="booking-info"><h4>' + (currentUser.userType === 'owner' ? b.sitterName : b.ownerName) + '</h4><p>🐱 ' + b.catName + '</p><p>📅 ' + new Date(b.startDate).toLocaleDateString() + ' - ' + new Date(b.endDate).toLocaleDateString() + '</p><p>💰 $' + b.totalCost + '</p></div><span class="booking-status status-' + b.status + '">' + b.status.toUpperCase() + '</span></div>').join('') : '<p style="color:#666">No bookings yet.</p>';
+            }
+
+            if (currentUser.userType === 'sitter') {
+                document.getElementById('sitter-profile-section').style.display = 'block';
+                loadSitterProfile();
+            }
+        }
+
+        async function loadSitterProfile() {
+            if (!currentUser.sitterProfile) return;
+            const p = currentUser.sitterProfile;
+            document.getElementById('sitter-profile-form').innerHTML = '<div class="form-group"><label>Borough</label><select id="profile-borough"><option value="Manhattan"' + (p.borough==='Manhattan'?' selected':'') + '>Manhattan</option><option value="Brooklyn"' + (p.borough==='Brooklyn'?' selected':'') + '>Brooklyn</option><option value="Queens"' + (p.borough==='Queens'?' selected':'') + '>Queens</option><option value="Bronx"' + (p.borough==='Bronx'?' selected':'') + '>Bronx</option><option value="Staten Island"' + (p.borough==='Staten Island'?' selected':'') + '>Staten Island</option></select></div><div class="form-group"><label>Neighborhood</label><input type="text" id="profile-neighborhood" value="' + (p.neighborhood||'') + '"></div><div class="form-group"><label>Daily Rate ($)</label><input type="number" id="profile-rate" value="' + p.rate + '"></div><div class="form-group"><label>Experience</label><input type="text" id="profile-experience" value="' + (p.experience||'') + '"></div><div class="form-group"><label>Bio</label><textarea id="profile-bio">' + (p.bio||'') + '</textarea></div><button type="submit" class="btn btn-primary">Update Profile</button>';
+        }
+
+        async function updateSitterProfile(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/sitters/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    borough: document.getElementById('profile-borough').value,
+                    neighborhood: document.getElementById('profile-neighborhood').value,
+                    rate: parseInt(document.getElementById('profile-rate').value),
+                    experience: document.getElementById('profile-experience').value,
+                    bio: document.getElementById('profile-bio').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) { alert('Profile updated!'); checkAuth(); }
+        }
+
+        async function handleContact(e) {
+            e.preventDefault();
+            const res = await fetch(API + '/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('contact-name').value,
+                    email: document.getElementById('contact-email').value,
+                    subject: document.getElementById('contact-subject').value,
+                    message: document.getElementById('contact-message').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('contact-alert').innerHTML = '<div class="alert alert-success">Message sent!</div>';
+                e.target.reset();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

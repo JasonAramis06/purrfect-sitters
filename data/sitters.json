@@ -1,0 +1,70 @@
+[
+  {
+    "id": 1,
+    "name": "Sarah Johnson",
+    "email": "sarah@example.com",
+    "phone": "(555) 123-4567",
+    "rating": 5,
+    "experience": "5 years",
+    "specialties": "Siamese, Persian",
+    "rate": 35,
+    "location": "Downtown",
+    "bio": "I love cats and have 5 years of professional sitting experience!",
+    "imageUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200"
+  },
+  {
+    "id": 2,
+    "name": "Michael Chen",
+    "email": "michael@example.com",
+    "phone": "(555) 234-5678",
+    "rating": 4.9,
+    "experience": "3 years",
+    "specialties": "Maine Coon, Ragdoll",
+    "rate": 30,
+    "location": "Midtown",
+    "bio": "Experienced with large breeds. Daily photo updates included!",
+    "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200"
+  },
+  {
+    "id": 1763679154487,
+    "name": "MR TEST",
+    "email": "Test@test.com",
+    "phone": "5555555105",
+    "location": "10468",
+    "experience": "Less than 1 year",
+    "specialties": "Bengal",
+    "rate": "35",
+    "bio": "I love cats",
+    "rating": 5,
+    "verified": false,
+    "createdAt": "2025-11-20T22:52:34.487Z"
+  },
+  {
+    "id": 1763702346459,
+    "name": "Sara ",
+    "email": "Saara789@gmail.com",
+    "phone": "7748569254",
+    "location": "10453",
+    "experience": "1-2 years",
+    "specialties": "Persian",
+    "rate": "20",
+    "bio": "just cause. kitties.",
+    "rating": 5,
+    "verified": false,
+    "createdAt": "2025-11-21T05:19:06.459Z"
+  },
+  {
+    "id": 1763926683569,
+    "name": "MR TEST",
+    "email": "mrtest@gmail.com",
+    "phone": "5555555105",
+    "location": "10468",
+    "experience": "1-2 years",
+    "specialties": "Bengal",
+    "rate": "15",
+    "bio": "Love cats",
+    "rating": 5,
+    "verified": false,
+    "createdAt": "2025-11-23T19:38:03.569Z"
+  }
+]
