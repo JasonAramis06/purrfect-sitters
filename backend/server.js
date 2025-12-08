@@ -10,36 +10,10 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const multer = require('multer');
-const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Setup multer for avatar uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname) || '.png';
-        cb(null, Date.now() + '-' + Math.random().toString(36).substr(2, 9) + ext);
-    }
-});
-const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
-});
-
-// Serve uploads statically
-app.use('/uploads', express.static(uploadsDir));
 
 // ============================================
 // MIDDLEWARE
@@ -73,9 +47,8 @@ app.use(session({
         ttl: 24 * 60 * 60 // 1 day
     }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // set to true in production with HTTPS
+        secure: false, // set to true in production with HTTPS
         httpOnly: true,
-        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
@@ -92,7 +65,6 @@ const userSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     userType: { type: String, enum: ['owner', 'sitter'], required: true },
     phone: String,
-    imageUrl: String, // avatar for user
     createdAt: { type: Date, default: Date.now },
     sitterProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Sitter' }
 });
@@ -267,8 +239,7 @@ app.post('/api/auth/register', async (req, res) => {
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                userType: user.userType,
-                sitterProfile: user.sitterProfile || null
+                userType: user.userType
             }
         });
 
@@ -360,51 +331,12 @@ app.get('/api/auth/me', async (req, res) => {
                 lastName: user.lastName,
                 userType: user.userType,
                 phone: user.phone,
-                imageUrl: user.imageUrl || null,
                 sitterProfile: sitterProfile
             }
         });
 
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to get user', error: error.message });
-    }
-});
-
-// Update current user profile (including avatar upload)
-app.put('/api/auth/me', requireAuth, upload.single('avatar'), async (req, res) => {
-    try {
-        const updates = {};
-        const allowed = ['firstName', 'lastName', 'phone'];
-        allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
-
-        if (req.file) {
-            updates.imageUrl = `/uploads/${req.file.filename}`;
-        }
-
-        const user = await User.findByIdAndUpdate(req.session.userId, { $set: updates }, { new: true }).select('-password');
-
-        let sitterProfile = null;
-        if (user.userType === 'sitter' && user.sitterProfile) {
-            sitterProfile = await Sitter.findById(user.sitterProfile);
-        }
-
-        res.json({
-            success: true,
-            message: 'Profile updated!',
-            user: {
-                id: user._id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                userType: user.userType,
-                phone: user.phone,
-                imageUrl: user.imageUrl || null,
-                sitterProfile: sitterProfile
-            }
-        });
-    } catch (error) {
-        console.error('Update profile error:', error);
-        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -497,18 +429,14 @@ app.get('/api/sitters/:id', async (req, res) => {
     }
 });
 
-// Update sitter profile (accept avatar upload)
-app.put('/api/sitters/profile', upload.single('avatar'), requireSitter, async (req, res) => {
+// Update sitter profile
+app.put('/api/sitters/profile', requireSitter, async (req, res) => {
     try {
         const user = req.user;
-        const updates = req.body || {};
+        const updates = req.body;
 
         if (updates.rate) {
             updates.rateDisplay = `$${updates.rate}/day`;
-        }
-
-        if (req.file) {
-            updates.imageUrl = `/uploads/${req.file.filename}`;
         }
 
         const sitter = await Sitter.findByIdAndUpdate(
@@ -517,11 +445,8 @@ app.put('/api/sitters/profile', upload.single('avatar'), requireSitter, async (r
             { new: true }
         );
 
-        // return updated user with sitterProfile
-        const updatedUser = await User.findById(user._id).select('-password');
-        res.json({ success: true, message: 'Profile updated!', data: { user: updatedUser, sitter } });
+        res.json({ success: true, message: 'Profile updated!', data: sitter });
     } catch (error) {
-        console.error('Update sitter error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -670,13 +595,8 @@ app.get('/api/contacts', async (req, res) => {
 // ============================================
 // SEED DATABASE - NYC SITTERS
 // ============================================
-// NOTE: Disabled by default in production. To enable seeding set ENV ENABLE_SEED=true
 app.get('/api/seed', async (req, res) => {
     try {
-        if (process.env.ENABLE_SEED !== 'true') {
-            return res.status(403).json({ success: false, message: 'Seeding is disabled. Set ENABLE_SEED=true to enable.' });
-        }
-
         await Breed.deleteMany({});
         await Sitter.deleteMany({});
 
@@ -1036,18 +956,16 @@ app.listen(PORT, () => {
        - POST /api/auth/login
        - POST /api/auth/logout
        - GET  /api/auth/me
-       - PUT  /api/auth/me (update profile, multipart/form-data; avatar field name: 'avatar')
        
        Data:
        - GET  /api/breeds
        - GET  /api/sitters (supports ?borough=&minRate=&maxRate=&specialty=&search=)
        - GET  /api/sitters/:id
-       - PUT  /api/sitters/profile (sitter updates; supports avatar upload field 'avatar')
        - POST /api/bookings
        - GET  /api/bookings/my
        - POST /api/reviews
        
        Setup:
-       - GET  /api/seed  (disabled by default; enable with ENABLE_SEED=true)
+       - GET  /api/seed
     `);
 });
