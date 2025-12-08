@@ -121,7 +121,7 @@
 <body>
     <nav>
         <div class="logo" onclick="showPage('home')">
-            <img src="https://media.tenor.com/images/ce8398445ca5e8cc7e380e04e2cc9b4f/tenor.gif" alt="Cat">
+            <img src="https://media.tenor.com/HAU_nZjbw9gAAAAi/cat-dance.gif" alt="Cat">
             Purrfect<span>Sitters</span>
         </div>
         <div class="nav-links">
@@ -431,7 +431,17 @@
             if (data.success) {
                 const bookings = data.data;
                 document.getElementById('dashboard-stats').innerHTML = '<div class="stat-card"><h3>' + bookings.length + '</h3><p>Total Bookings</p></div><div class="stat-card"><h3>' + bookings.filter(b => b.status === 'pending').length + '</h3><p>Pending</p></div><div class="stat-card"><h3>' + bookings.filter(b => b.status === 'confirmed').length + '</h3><p>Confirmed</p></div>';
-                document.getElementById('dashboard-bookings').innerHTML = bookings.length ? bookings.map(b => '<div class="booking-card"><div class="booking-info"><h4>' + (currentUser.userType === 'owner' ? b.sitterName : b.ownerName) + '</h4><p>🐱 ' + b.catName + '</p><p>📅 ' + new Date(b.startDate).toLocaleDateString() + ' - ' + new Date(b.endDate).toLocaleDateString() + '</p><p>💰 $' + b.totalCost + '</p></div><span class="booking-status status-' + b.status + '">' + b.status.toUpperCase() + '</span></div>').join('') : '<p style="color:#666">No bookings yet.</p>';
+                document.getElementById('dashboard-bookings').innerHTML = bookings.length ? bookings.map(b => {
+                    let actionButtons = '';
+                    if (currentUser.userType === 'sitter') {
+                        if (b.status === 'pending') {
+                            actionButtons = '<div style="display:flex;gap:8px;margin-top:10px;"><button class="btn btn-primary btn-small" onclick="updateBookingStatus(\'' + b._id + '\', \'confirmed\')">Confirm</button><button class="btn btn-secondary btn-small" onclick="updateBookingStatus(\'' + b._id + '\', \'cancelled\')">Decline</button></div>';
+                        } else if (b.status === 'confirmed') {
+                            actionButtons = '<div style="margin-top:10px;"><button class="btn btn-primary btn-small" onclick="updateBookingStatus(\'' + b._id + '\', \'completed\')">Mark Completed</button></div>';
+                        }
+                    }
+                    return '<div class="booking-card"><div class="booking-info"><h4>' + (currentUser.userType === 'owner' ? b.sitterName : b.ownerName) + '</h4><p>🐱 ' + b.catName + '</p><p>📅 ' + new Date(b.startDate).toLocaleDateString() + ' - ' + new Date(b.endDate).toLocaleDateString() + '</p><p>💰 $' + b.totalCost + '</p>' + actionButtons + '</div><span class="booking-status status-' + b.status + '">' + b.status.toUpperCase() + '</span></div>';
+                }).join('') : '<p style="color:#666">No bookings yet.</p>';
             }
 
             if (currentUser.userType === 'sitter' && currentUser.sitterProfile) {
@@ -457,6 +467,22 @@
             });
             const data = await res.json();
             if (data.success) { alert('Sitter profile updated!'); await checkAuth(); loadDashboard(); }
+        }
+
+        async function updateBookingStatus(bookingId, status) {
+            const res = await fetch(API + '/bookings/' + bookingId + '/status', { 
+                method: 'PUT', 
+                headers: { 'Content-Type': 'application/json' }, 
+                credentials: 'include',
+                body: JSON.stringify({ status: status })
+            });
+            const data = await res.json();
+            if (data.success) { 
+                alert('Booking ' + status + '!'); 
+                loadDashboard(); 
+            } else {
+                alert('Error: ' + data.message);
+            }
         }
 
         async function loadHomeBreeds() {
