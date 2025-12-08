@@ -612,7 +612,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Daily brushing required. Keep eyes clean.',
                 bestFor: 'Quiet homes, seniors, apartments',
                 health: 'Watch for breathing issues and eye problems.',
-                imageUrl: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=400'
+                imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Persialainen.jpg?w=400'
             },
             {
                 id: 'maine-coon',
@@ -624,7 +624,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Regular brushing, lots of playtime.',
                 bestFor: 'Families, homes with other pets',
                 health: 'Watch for hip dysplasia and heart issues.',
-                imageUrl: 'https://images.unsplash.com/photo-1615497001839-b0a0eac3274c?w=400'
+                imageUrl: 'https://framerusercontent.com/images/9vaMYZ1IbMWni6Fxww0r2chMFhc.jpg?width=400'
             },
             {
                 id: 'siamese',
@@ -636,7 +636,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Needs lots of attention and mental stimulation.',
                 bestFor: 'Active owners who are home often',
                 health: 'Generally healthy, watch for dental issues.',
-                imageUrl: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?w=400'
+                imageUrl: 'https://assets.elanco.com/8e0bf1c2-1ae4-001f-9257-f2be3c683fb1/fca42f04-2474-4302-a238-990c8aebfe8c/Siamese_cat_1110x740.jpg?w=400'
             },
             {
                 id: 'british-shorthair',
@@ -648,7 +648,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Weekly brushing, moderate exercise.',
                 bestFor: 'Busy professionals, apartments',
                 health: 'Watch for obesity and heart disease.',
-                imageUrl: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400'
+                imageUrl: 'https://cdn.shopify.com/s/files/1/0274/5994/4493/files/BRI_Dad_-_Newtella.png?v=1742455452?w=400'
             },
             {
                 id: 'ragdoll',
@@ -660,7 +660,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Regular brushing, indoor only recommended.',
                 bestFor: 'Families with children, calm homes',
                 health: 'Watch for heart disease and bladder stones.',
-                imageUrl: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?w=400'
+                imageUrl: 'https://www.floppycats.com/wp-content/uploads/2022/09/Ragna-Ragdoll-Cat-of-the-Week-RagnaOutside.jpg?w=400'
             },
             {
                 id: 'bengal',
@@ -672,7 +672,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Lots of exercise and enrichment needed.',
                 bestFor: 'Active owners, large spaces',
                 health: 'Generally healthy, watch for heart issues.',
-                imageUrl: 'https://images.unsplash.com/photo-1606214174585-fe31582dc6ee?w=400'
+                imageUrl: 'https://image.petmd.com/files/inline-images/bengal-cat.jpeg?VersionId=X0xkDftr_klFvUhQpLarkxvJBbnUAd01?w=400'
             },
             {
                 id: 'scottish-fold',
@@ -684,7 +684,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Regular ear cleaning, moderate grooming.',
                 bestFor: 'Any home, good with children',
                 health: 'Watch for joint issues.',
-                imageUrl: 'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=400'
+                imageUrl: 'https://cdn.wamiz.fr/cdn-cgi/image/format=auto,quality=80,width=720,height=405,fit=cover/animal/breed/cat/adult/6687c811719fb656583283.jpg?w=400'
             },
             {
                 id: 'sphynx',
@@ -696,7 +696,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Regular baths, keep warm, sun protection.',
                 bestFor: 'Allergy sufferers, attentive owners',
                 health: 'Watch for skin issues and heart disease.',
-                imageUrl: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400'
+                imageUrl: 'https://images.squarespace-cdn.com/content/v1/54822a56e4b0b30bd821480c/1672325275441-8O2J3VIWG1ZWAOAOPQ7V/sphynx.jpg?w=400'
             },
             {
                 id: 'abyssinian',
@@ -708,7 +708,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Lots of vertical space and toys needed.',
                 bestFor: 'Active families, multi-cat homes',
                 health: 'Watch for kidney disease.',
-                imageUrl: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400'
+                imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_2G2ALwTk3GqXxMGAvnx1vncNYnR_r6uWfiFwUxNOYl6_ME-9YbUJLVjEoGBhTxnKN9amOjfThZ35ikzgXpBIcb9uxaSEvRbMzWpjM0s&s=10?w=400'
             },
             {
                 id: 'russian-blue',
@@ -720,7 +720,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Low maintenance, weekly brushing.',
                 bestFor: 'Quiet homes, singles, seniors',
                 health: 'Generally very healthy breed.',
-                imageUrl: 'https://images.unsplash.com/photo-1571566882372-1598d88abd90?w=400'
+                imageUrl: 'https://rawznaturalpetfood.com/wp-content/uploads/2021/05/russian-blue-cats.jpg?w=400'
             },
             {
                 id: 'norwegian-forest',
@@ -732,7 +732,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Regular brushing, especially in spring.',
                 bestFor: 'Families, homes with outdoor access',
                 health: 'Watch for heart and kidney issues.',
-                imageUrl: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400'
+                imageUrl: 'https://image.petmd.com/files/styles/863x625/public/2023-04/norwegian-forest-cat.jpg?w=400'
             },
             {
                 id: 'american-shorthair',
@@ -744,7 +744,7 @@ app.get('/api/seed', async (req, res) => {
                 care: 'Low maintenance, weekly brushing.',
                 bestFor: 'Families, first-time cat owners',
                 health: 'Watch for obesity.',
-                imageUrl: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=400'
+                imageUrl: 'https://framerusercontent.com/images/zrmhsmoFui8gk0S3XnUFkpo10hs.jpg?w=400'
             }
         ];
 
