@@ -30,7 +30,7 @@ const transporter = nodemailer.createTransport({
 async function sendBookingConfirmation(toEmail, booking, sitter) {
     try {
         await transporter.sendMail({
-            from: `"Purrfect Sitters" <${process.env.EMAIL_USER}>`,
+            from: '"Purrfect Sitters" <lopez.jason.0101@gmail.com>',
             to: toEmail,
             subject: 'Booking Confirmation - Purrfect Sitters 🐱',
             html: `
